@@ -12,7 +12,7 @@ const database = require('./database')
 const { getRobotMessage, getSettingServiceMessage } = require("./utils")
 const products = require("./commands/products")
 const productSettlement = require("./commands/productSettlement")
-const { addRobot, turnOffBot, stopBotMessage, runBotMessage, setService } = require("./actions/bot")
+const { addRobot, stopBotMessage, runBotMessage, setService, setMeAsService } = require("./actions/bot")
 const options = require("./commands/options")
 
 database()
@@ -56,31 +56,31 @@ bot.on('callback_query', (callbackQuery) => {
             break
 
         case 'set_servicer':
-            console.log("set sevicer data =================>", data)
-            const settingServiceMessage = getSettingServiceMessage();
-            bot.sendMessage(chatId, settingServiceMessage, {
-                reply_markup: {
-                    keyboard: [['选择用户']],
-                    resize_keyboard: true,
-                }
-            })
-            .then(() => {
-                bot.sendMessage(chatId, "⚠️ 如果是此账号，请点击此消息下方按钮。",  {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [{ text: '💁‍♀️ 设置此账号为客服', callback_data: JSON.stringify({
-                                action: 'set_me_as_service',
-                                sendBot: data.botUserName
-                            }) }]
-                        ],
-                        one_time_keyboard: true
-                    },
-                })
-            })
+            // const settingServiceMessage = getSettingServiceMessage();
+            // bot.sendMessage(chatId, settingServiceMessage, {
+            //     reply_markup: {
+            //         keyboard: [['选择用户']],
+            //         resize_keyboard: true,
+            //     }
+            // })
+            // .then(() => {
+            //     bot.sendMessage(chatId, "⚠️ 如果是此账号，请点击此消息下方按钮。",  {
+            //         reply_markup: {
+            //             inline_keyboard: [
+            //                 [{ text: '💁‍♀️ 设置此账号为客服', callback_data: JSON.stringify({
+            //                     action: 'set_me_as_service',
+            //                     sendBot: data.botUserName
+            //                 }) }]
+            //             ],
+            //             one_time_keyboard: true
+            //         },
+            //     })
+            // })
+            setService(chatId, data);
             break
         
         case 'set_me_as_service':
-            setService(data, user, chatId, messageId)
+            setMeAsService(data, user, chatId, messageId)
             break
     }
 

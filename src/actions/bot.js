@@ -1,6 +1,6 @@
 const Bot = require('../Models/Bot')
 const bot = require('../bot');
-const { getAddBotErrorMessage, getBindBotMessage, setBindBotMessage } = require('../utils');
+const { getAddBotErrorMessage, getBindBotMessage, setBindBotMessage, getSettingServiceMessage } = require('../utils');
 const axios = require('axios');
 const { setChildBot } = require('./childBot');
 const { getUserInfo } = require('./user');
@@ -256,7 +256,30 @@ async function getBotInfo(token) {
     }
 }
 
-async function setService(data, user, chatId, messageId) {
+function setService(chatId, data) {
+    const settingServiceMessage = getSettingServiceMessage();
+    bot.sendMessage(chatId, settingServiceMessage, {
+        reply_markup: {
+            keyboard: [['选择用户']],
+            resize_keyboard: true,
+        }
+    })
+    .then(() => {
+        bot.sendMessage(chatId, "⚠️ 如果是此账号，请点击此消息下方按钮。",  {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '💁‍♀️ 设置此账号为客服', callback_data: JSON.stringify({
+                        action: 'set_me_as_service',
+                        sendBot: data.botUserName
+                    }) }]
+                ],
+                one_time_keyboard: true
+            },
+        })
+    })
+}
+
+async function setMeAsService(data, user, chatId, messageId) {
     console.log("data ==========>", data)
     let myId;
     await Bot.findOne({botUserName: data.sendBot})
@@ -338,4 +361,4 @@ async function setService(data, user, chatId, messageId) {
         })
 }
 
-module.exports = { setService, runBotMessage, stopBotMessage, addRobot, getBotInfo }
+module.exports = { setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }
