@@ -1,6 +1,6 @@
 const Bot = require('../Models/Bot')
 const bot = require('../bot');
-const { getAddBotErrorMessage, getBindBotMessage, setBindBotMessage, getSettingServiceMessage } = require('../utils');
+const { getAddBotErrorMessage, getBindBotMessage, getSettingServiceMessage, setBindBotMessageTurnOff, setBindBotMessageTurnOn } = require('../utils');
 const axios = require('axios');
 const { setChildBot } = require('./childBot');
 const { getUserInfo } = require('./user');
@@ -34,7 +34,13 @@ async function addRobot(botToken, chatId, user) {
 
 function botState(bot, botData, chatId) {
     bot.sendMessage(chatId, `机器人 @${botData.user_name} 绑定成功！请进入机器人，发送 /start 查看`)
-    const bindBotMessage = getBindBotMessage(botData.user_name)
+    const textParas = {
+        botNameId: botData.user_name,
+        potential: '未设置',
+        switch: '开启',
+        state: '已启动'
+    }
+    const bindBotMessage = getBindBotMessage(textParas)
     bot.sendMessage(chatId, bindBotMessage, {
         reply_markup: {
             inline_keyboard: [
@@ -98,9 +104,20 @@ function botState(bot, botData, chatId) {
 
 function stopBotMessage(displayData, chatId, messageId) {
     Bot.findOneAndUpdate({botUserName: displayData.botUserName}, {$set: {onoffState: false}})
-        .then(res => {
-            bot.editMessageReplyMarkup(
-                {
+        .then(async res => {
+            const user = await getUserInfo(res.serviceUser)
+            const potential = res.serviceUser !== null ? `${user.firstName} (${res.serviceUser})` : '未设置'
+            const textParas = {
+                botNameId: displayData.botUserName,
+                potential,
+                switch: '关闭',
+                state: '未启动'
+            }
+            const bindBotMessage = getBindBotMessage(textParas)
+            bot.editMessageText(bindBotMessage,{
+                chat_id: chatId,
+                message_id: messageId,
+                reply_markup: {
                     inline_keyboard: [
                         [{
                             text: '▶ 启动',
@@ -156,77 +173,85 @@ function stopBotMessage(displayData, chatId, messageId) {
                             })
                         }]
                     ],
-                }, {
-                    chat_id: chatId,
-                    message_id: messageId
                 }
-            )
+            })
         })
 }
 
 function runBotMessage(displayData, chatId, messageId) {
     Bot.findOneAndUpdate({botUserName: displayData.botUserName}, {$set: {onoffState: true}})
-        .then(res => {
-            bot.editMessageReplyMarkup(
+        .then(async res => {
+            const user = await getUserInfo(res.serviceUser)
+            const potential = res.serviceUser !== null ? `${user.firstName} (${res.serviceUser})` : '未设置'
+            const textParas = {
+                botNameId: displayData.botUserName,
+                potential,
+                switch: '开启',
+                state: '已启动'
+            }
+            const bindBotMessage = getBindBotMessage(textParas)
+            bot.editMessageText(
+                bindBotMessage,
                 {
-                    inline_keyboard: [
-                        [{
-                            text: '⛔ 停止',
-                            callback_data: JSON.stringify({
-                                action: 'stop_bot',
-                                botUserName: displayData.botUserName
-                            })
-                        },
-                        {
-                            text: '🔑 更新 Token',
-                            callback_data: JSON.stringify({
-                                action: 'update_bot',
-                                data: ''
-                            })
-                        }],
-                        [{
-                            text: '💁‍♀️ 设置客服',
-                            callback_data: JSON.stringify({
-                                action: 'set_servicer',
-                                botUserName: displayData.botUserName
-                            })
-                        }],
-                        [{
-                            text: '🎉 欢迎消息',
-                            url: `http://t.me/${displayData.botUserName}`
-                        }],
-                        [{
-                            text: '📦 商品列表',
-                            callback_data: JSON.stringify({
-                                action: 'products_list',
-                                data: ''
-                            })
-                        }],
-                        [{
-                            text: '💹 代理分销',
-                            callback_data: JSON.stringify({
-                                action: 'anylisis_service',
-                                data: ''
-                            })
-                        }],
-                        [{
-                            text: '🚮 删除列表',
-                            callback_data: JSON.stringify({
-                                action: 'delete_bot',
-                                data: ''
-                            })
-                        }],
-                        [{
-                            text: '🔙 返回',
-                            callback_data: JSON.stringify({
-                                action: 'back',
-                                data: ''
-                            })
-                        }]
-                    ],
-                }, {
                     chat_id: chatId,
-                    message_id: messageId
+                    message_id: messageId,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{
+                                text: '⛔ 停止',
+                                callback_data: JSON.stringify({
+                                    action: 'stop_bot',
+                                    botUserName: displayData.botUserName
+                                })
+                            },
+                            {
+                                text: '🔑 更新 Token',
+                                callback_data: JSON.stringify({
+                                    action: 'update_bot',
+                                    data: ''
+                                })
+                            }],
+                            [{
+                                text: '💁‍♀️ 设置客服',
+                                callback_data: JSON.stringify({
+                                    action: 'set_servicer',
+                                    botUserName: displayData.botUserName
+                                })
+                            }],
+                            [{
+                                text: '🎉 欢迎消息',
+                                url: `http://t.me/${displayData.botUserName}`
+                            }],
+                            [{
+                                text: '📦 商品列表',
+                                callback_data: JSON.stringify({
+                                    action: 'products_list',
+                                    data: ''
+                                })
+                            }],
+                            [{
+                                text: '💹 代理分销',
+                                callback_data: JSON.stringify({
+                                    action: 'anylisis_service',
+                                    data: ''
+                                })
+                            }],
+                            [{
+                                text: '🚮 删除列表',
+                                callback_data: JSON.stringify({
+                                    action: 'delete_bot',
+                                    data: ''
+                                })
+                            }],
+                            [{
+                                text: '🔙 返回',
+                                callback_data: JSON.stringify({
+                                    action: 'back',
+                                    data: ''
+                                })
+                            }]
+                        ],
+                    }
                 }
             )
         })
@@ -295,7 +320,7 @@ async function setMeAsService(data, user, chatId, messageId) {
                         .then(child => childBot.stopPolling());
                     bot.sendMessage(chatId, '✅ 向客服发送通知成功')
                         .then(resthen => {
-                            const bindBotMessage = setBindBotMessage(res.botUserName, me)
+                            const bindBotMessage = res.onoffState ? setBindBotMessageTurnOn(res.botUserName, me) : setBindBotMessageTurnOff(res.botUserName, me)
                             bot.sendMessage(chatId, bindBotMessage, {
                                 reply_markup: {
                                     inline_keyboard: [

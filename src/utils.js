@@ -83,18 +83,18 @@ function getAddBotErrorMessage() {
     `
 }
 
-function getBindBotMessage(userName) {
+function getBindBotMessage(textParas) {
     return `
 当前绑定的机器人：
-@${userName}
-客服账号：未设置
+@${textParas.botNameId}
+客服账号：${textParas.potential}
 授权状态：已授权
-运行开关：开启
-运行状态：已启动
+运行开关：${textParas.switch}
+运行状态：${textParas.state}
     `
 }
 
-function setBindBotMessage(botUserName, user) {
+function setBindBotMessageTurnOn(botUserName, user) {
     return `
 当前绑定的机器人：
 @${botUserName}
@@ -102,6 +102,17 @@ function setBindBotMessage(botUserName, user) {
 授权状态：已授权
 运行开关：开启
 运行状态：已启动
+    `
+}
+
+function setBindBotMessageTurnOff(botUserName, user) {
+    return `
+当前绑定的机器人：
+@${botUserName}
+客服账号：${user.firstName} (${user.userId})}
+授权状态：已授权
+运行开关：关闭
+运行状态：未启动
     `
 }
 
@@ -216,4 +227,4 @@ async function estimateTransactionFee(tronWeb, from, to, amount) {
     }
 }
 
-module.exports = { setBindBotMessage, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, validateToken, getProductMessage }
+module.exports = { setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, validateToken, getProductMessage }
