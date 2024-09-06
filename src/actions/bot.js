@@ -1,6 +1,6 @@
 const Bot = require('../Models/Bot')
 const bot = require('../bot');
-const { getAddBotErrorMessage, getBindBotMessage } = require('../utils');
+const { getAddBotErrorMessage, getBindBotMessage, setBindBotMessage } = require('../utils');
 const axios = require('axios');
 const { setChildBot } = require('./childBot');
 const { getUserInfo } = require('./user');
@@ -272,7 +272,7 @@ async function setService(data, user, chatId, messageId) {
                         .then(child => childBot.stopPolling());
                     bot.sendMessage(chatId, '✅ 向客服发送通知成功')
                         .then(resthen => {
-                            const bindBotMessage = getBindBotMessage(res.botUserName)
+                            const bindBotMessage = setBindBotMessage(res.botUserName, me)
                             bot.sendMessage(chatId, bindBotMessage, {
                                 reply_markup: {
                                     inline_keyboard: [
