@@ -3,8 +3,9 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "start": "node src/bot.js",
-        "dev": "nodemon src/bot.js",
+        "start": "node src/main.js",
+        "dev": "nodemon src/button.js",
+        "devtest": "nodemon src/devtest.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
@@ -17,6 +18,7 @@
         "bip39": "^3.1.0",
         "dotenv": "^16.4.5",
         "hdkey": "^2.1.0",
+        "mongoose": "^8.6.1",
         "node-telegram-bot-api": "^0.66.0",
         "tronweb": "^5.3.2"
     },

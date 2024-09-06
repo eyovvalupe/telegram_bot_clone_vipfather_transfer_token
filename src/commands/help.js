@@ -1,9 +1,6 @@
 const { getHelpMessage } = require("../utils")
 
-module.exports = bot => {
-    bot.onText(/\/help$/, msg => {
-        const chatId = msg.chat.id
-        const helpMessage = getHelpMessage()
-        bot.sendMessage(chatId, helpMessage)
-    })
+module.exports = (bot, chatId) => {
+    const helpMessage = getHelpMessage()
+    bot.sendMessage(chatId, helpMessage, {parse_mode: "HTML"})
 }
