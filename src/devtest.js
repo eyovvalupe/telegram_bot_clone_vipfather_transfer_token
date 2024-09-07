@@ -118,8 +118,9 @@ bot.onText(/\/help/, (msg) => {
 
 bot.onText(/\🤖 机器人/, (msg) => {
     const chatId = msg.chat.id;
+    const user = msg.from;
     if (userStates[chatId]) delete userStates[chatId]; // Clear user state
-    robot(bot, chatId);
+    robot(bot, chatId, user);
 });
 
 bot.onText(/\📦 商品/, (msg) => {

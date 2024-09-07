@@ -98,7 +98,7 @@ function setBindBotMessageTurnOn(botUserName, user) {
     return `
 当前绑定的机器人：
 @${botUserName}
-客服账号：${user.firstName} (${user.userId})}
+客服账号：${user.firstName} (${user.userId})
 授权状态：已授权
 运行开关：开启
 运行状态：已启动

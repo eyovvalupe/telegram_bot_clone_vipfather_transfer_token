@@ -386,4 +386,12 @@ async function setMeAsService(data, user, chatId, messageId) {
         })
 }
 
-module.exports = { setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }
+async function getBotList(userId) {
+    console.log(userId)
+    let botlist;
+    await Bot.find({userId: userId})
+            .then(res => botlist = res);
+    return botlist;
+}
+
+module.exports = { getBotList, setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }

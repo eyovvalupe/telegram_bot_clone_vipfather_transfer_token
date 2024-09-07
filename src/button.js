@@ -1,40 +1,40 @@
 const TelegramBot = require('node-telegram-bot-api');
 
-// Replace with your bot tokens
-const bot1Token = '7281969523:AAHnEuVCItQwsXwCChumBZQDRdCB1F-Ay-0'; // Bot that shows the inline menu
-const bot2Token = '7350756188:AAH_dZqGJDMDUdgY6YpJsk3SvRqAb8bRR1Q'; // Bot that sends the message
+// Replace with your bot token
+const token = '7281969523:AAHnEuVCItQwsXwCChumBZQDRdCB1F-Ay-0';
+const bot = new TelegramBot(token, { polling: true });
 
-// Create bot instances
-const bot1 = new TelegramBot(bot1Token, { polling: true });
-const bot2 = new TelegramBot(bot2Token, { polling: true });
+let userGroups = {}; // Object to store user group memberships
 
-// Set up inline menu for Bot 1
-bot1.onText(/\/start/, (msg) => {
-    const chatId = msg.chat.id;
+// Listen for messages in groups
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id; // Group chat ID
+    const userId = msg.from.id; // User ID of the person who sent the message
 
-    const options = {
-        reply_markup: {
-            inline_keyboard: [[
-                { text: 'Send Message from Bot 2', callback_data: 'send_message' }
-            ]]
+    // Check if the message is from a group
+    if (msg.chat.type === 'group' || msg.chat.type === 'supergroup') {
+        // Initialize userGroups for the user if not already done
+        if (!userGroups[userId]) {
+            userGroups[userId] = new Set(); // Use a Set to avoid duplicates
         }
-    };
 
-    bot1.sendMessage(chatId, 'Choose an option:', options);
-});
+        // Add the group ID to the user's set of groups
+        userGroups[userId].add(chatId);
 
-// Handle callback from the inline menu in Bot 1
-bot1.on('callback_query', (callbackQuery) => {
-    const chatId = callbackQuery.message.chat.id;
-
-    if (callbackQuery.data === 'send_message') {
-        // Trigger Bot 2 to send a message
-        bot2.sendMessage(chatId, 'Hello from Bot 2!');
-        bot1.answerCallbackQuery(callbackQuery.id, { text: 'Message sent from Bot 2!' });
+        // Optionally, send a welcome message
+        bot.sendMessage(chatId, `Hello, ${msg.from.first_name}! You can check your groups using /mygroups.`);
     }
 });
 
-// Optional: Set up a command for Bot 2 to respond to a specific command
-bot2.onText(/\/start/, (msg) => {
-    bot2.sendMessage(msg.chat.id, 'Bot 2 is ready to send messages!');
+// Command to list groups the user is part of
+bot.onText(/\/mygroups/, (msg) => {
+    const userId = msg.from.id;
+    const chatId = msg.chat.id;
+
+    if (userGroups[userId] && userGroups[userId].size > 0) {
+        const groupsList = Array.from(userGroups[userId]).map(id => `Group ID: ${id}`).join('\n');
+        bot.sendMessage(chatId, `You are a member of the following groups:\n${groupsList}`);
+    } else {
+        bot.sendMessage(chatId, 'You are not a member of any groups tracked by this bot.');
+    }
 });
