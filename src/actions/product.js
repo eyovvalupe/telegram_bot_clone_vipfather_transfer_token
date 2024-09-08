@@ -30,10 +30,53 @@ async function checkProductsForBot(botUserName) {
     return hasPdts;
 }
 
-function productInfoMessage(chatId, hasPdts, botUserName) {
+async function productInfoMessage(chatId, hasPdts, botUserName) {
     if (hasPdts) {
         const hasPdtsMessage = hasProductMessage(botUserName)
-        bot.sendMessage(chatId, hasPdtsMessage)
+        const products = await getPdtListFromBotUSerName(botUserName)
+        const pdts = products.reduce((acc, cur) => {
+            acc.push([{
+                text: `📦 ${cur.productName} ✅`,
+                callback_data: JSON.stringify({
+                    action: 'productDetail',
+                    pdtName: cur.productName
+                })
+            }])
+            return acc
+        }, [])
+        bot.sendMessage(chatId, hasPdtsMessage, {
+            reply_markup: {
+                inline_keyboard: [
+                    [{
+                        text: '➕ 创建商品',
+                        callback_data: JSON.stringify({
+                            action: 'add_product',
+                            botUserName
+                        })
+                    }],
+                    ...pdts,
+                    [
+                        {
+                            text: '⬅ 上一页',
+                            callback_data: JSON.stringify({
+                                action: 'before'
+                            })
+                        },{
+                            text: '➡ 下一页',
+                            callback_data: JSON.stringify({
+                                action: 'next'
+                            })
+                        }
+                    ],
+                    [{
+                        text: '🔙 返回',
+                        callback_data: JSON.stringify({
+                            action: 'back'
+                        })
+                    }]
+                ]
+            }
+        })
     } else {
         const noHasPdtsMessage = noHasProductMessage()
         bot.sendMessage(chatId, noHasPdtsMessage, {
