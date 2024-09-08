@@ -1,16 +1,20 @@
 const bot = require('../bot')
 const Product = require('../Models/Product');
-const { hasProductMessage, noHasProductMessage } = require('../utils');
+const { hasProductMessage, noHasProductMessage, getAddProductMessage } = require('../utils');
 
-async function initializeProduct(botData, user) {
+async function addProduct(pdtName, user, botUserName) {
     const productSpace = new Product({
         userId: user.id,
-        botUserName: botData.user_name,
-        product: []
+        botUserName: botUserName,
+        productName: pdtName,
+        productDescription: '',
+        priority: 0,
+        productGroup: [],
+        productUrl: `https://t.me/${botUserName}?start=home`
     });
-    productSpace.save()
+    await productSpace.save()
         .then(() => {
-            console.log('Product space initialized!')
+            console.log('Product has been added!')
         })
         .catch(err => console.error(err));
 }
@@ -19,9 +23,9 @@ async function checkProductsForBot(botUserName) {
     let hasPdts;
     await Product.findOne({botUserName})
             .then(res => {
-                if (res.product.length > 0) {
-                    hasPdts = true;
-                } else hasPdts = false
+                if (res ===null) {
+                    hasPdts = false;
+                } else hasPdts = true
             })
     return hasPdts;
 }
@@ -48,8 +52,22 @@ function productInfoMessage(chatId, hasPdts, botUserName) {
     }
 }
 
-function addProductMessage(botUserName, pdtName) {
-    
+async function getPdtListFromBotUSerName(botUserName) {
+    let pdtList;
+    await Product.find({botUserName})
+        .then(res => {
+            pdtList = res;
+        });
+    return pdtList;
 }
 
-module.exports = { addProductMessage, productInfoMessage, checkProductsForBot, initializeProduct }
+async function addProductMessage(data, chatId, messageId, userStates) {
+    const addProductMessageText = getAddProductMessage()
+    bot.sendMessage(chatId, addProductMessageText, {
+        reply_to_message_id: messageId 
+    })
+    console.log(data)
+    userStates[chatId] = `${data.botUserName}`
+}
+
+module.exports = { addProductMessage, productInfoMessage, checkProductsForBot, addProduct }

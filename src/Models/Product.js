@@ -12,9 +12,24 @@ const ProducModelSchema = new Schema({
     serviceUser: {
         type: String,
     },
-    product: {
-        type: Array,
+    productName: {
+        type: String,
+        required: true,
+    },
+    productDescription: {
+        type: String,
+    },
+    priority: {
+        type: Number,
+        required: true,
+    },
+    productGroup: {
+        type: Array
+    },
+    productUrl: {
+        type: String
     }
+
 })
 
 module.exports = ProductModel = model("productModel", ProducModelSchema)

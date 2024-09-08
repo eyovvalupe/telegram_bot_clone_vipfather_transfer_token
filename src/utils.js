@@ -137,25 +137,31 @@ function hasProductMessage(botUserName) {
     `
 }
 
-function validateToken(token, chatId) {
-    const tokenRegex = /^[0-9]{8,10}:[A-Za-z0-9_-]{35}$/; // Regex to validate token format
-
-    if (tokenRegex.test(token)) {
-        bot.getMe()
-            .then(() => {
-                bot.sendMessage(chatId, 'Valid bot API token!');
-            })
-            .catch(() => {
-                bot.sendMessage(chatId, 'Invalid bot API token. Please try again or type /cancel to cancel.');
-                // Prompt for token again
-                bot.sendMessage(chatId, 'Please enter your bot API token or type /cancel to cancel.');
-            });
-    } else {
-        bot.sendMessage(chatId, 'Invalid format. Please enter a valid bot API token or type /cancel to cancel.');
-        // Prompt for token again
-        bot.sendMessage(chatId, 'Please enter your bot API token or type /cancel to cancel.');
-    }
+function getAddProductMessage() {
+    return `
+请输入商品名称，禁止输入违规商品名，风控无法付款后果自负。建议为XX赞助：
+    `
 }
+
+// function validateToken(token, chatId) {
+//     const tokenRegex = /^[0-9]{8,10}:[A-Za-z0-9_-]{35}$/; // Regex to validate token format
+
+//     if (tokenRegex.test(token)) {
+//         bot.getMe()
+//             .then(() => {
+//                 bot.sendMessage(chatId, 'Valid bot API token!');
+//             })
+//             .catch(() => {
+//                 bot.sendMessage(chatId, 'Invalid bot API token. Please try again or type /cancel to cancel.');
+//                 // Prompt for token again
+//                 bot.sendMessage(chatId, 'Please enter your bot API token or type /cancel to cancel.');
+//             });
+//     } else {
+//         bot.sendMessage(chatId, 'Invalid format. Please enter a valid bot API token or type /cancel to cancel.');
+//         // Prompt for token again
+//         bot.sendMessage(chatId, 'Please enter your bot API token or type /cancel to cancel.');
+//     }
+// }
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -241,4 +247,4 @@ async function estimateTransactionFee(tronWeb, from, to, amount) {
     }
 }
 
-module.exports = { hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, validateToken, getProductMessage }
+module.exports = { getAddProductMessage, hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, getProductMessage }

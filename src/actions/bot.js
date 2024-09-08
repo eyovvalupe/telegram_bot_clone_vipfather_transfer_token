@@ -4,7 +4,7 @@ const { getAddBotErrorMessage, getBindBotMessage, getSettingServiceMessage, setB
 const axios = require('axios');
 const { setChildBot } = require('./childBot');
 const { getUserInfo } = require('./user');
-const { initializeProduct } = require('./product');
+// const { initializeProduct } = require('./product');
 
 async function addRobot(botToken, chatId, user) {
     Bot.findOne({token: botToken})
@@ -25,7 +25,7 @@ async function addRobot(botToken, chatId, user) {
                     console.log('Bot saved!')
                 })
                 .catch(err => console.error('Error saving bot token: ', err));
-            await initializeProduct(botData, user)
+            // await initializeProduct(botData, user)
             botState(botData, chatId)
         } else {
             const addBotMessage = getAddBotErrorMessage()
@@ -413,4 +413,21 @@ async function checkBotService(botUserName) {
     return isBotHasService;
 }
 
-module.exports = { checkBotService, getBotList, setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }
+function validateToken(token, chatId, user, userStates) {
+    const tokenRegex = /^[0-9]{8,10}:[A-Za-z0-9_-]{35}$/; // Regex to validate token format
+
+    if (tokenRegex.test(token)) {
+        bot.getMe()
+            .then(() => {
+                addRobot(token, chatId, user)
+                delete userStates[chatId]; // Clear user state
+            })
+            .catch((err) => {
+                bot.sendMessage(chatId, 'xbvbxcvb机器人 Token 格式错误。发送 /cancel 取消设置。');
+            });
+    } else {
+        bot.sendMessage(chatId, '机器人 Token 格式错误。发送 /cancel 取消设置。');
+    }
+}
+
+module.exports = { validateToken, checkBotService, getBotList, setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }

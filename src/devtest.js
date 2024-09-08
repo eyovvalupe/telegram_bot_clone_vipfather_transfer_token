@@ -11,10 +11,11 @@ const robot = require("./commands/robot")
 const database = require('./database')
 const { getRobotMessage, getSettingServiceMessage } = require("./utils")
 const productSettlement = require("./commands/productSettlement")
-const { addRobot, stopBotMessage, runBotMessage, setService, setMeAsService } = require("./actions/bot")
+const { addRobot, stopBotMessage, runBotMessage, setService, setMeAsService, validateToken } = require("./actions/bot")
 const options = require("./commands/options")
 const distributedProducts = require("./commands/distributedProducts")
 const products = require("./commands/products")
+const { addProductMessage, addProduct } = require("./actions/product")
 const chooseBot = require("./commands/chooseBot")
 
 database()
@@ -69,7 +70,7 @@ bot.on('callback_query', (callbackQuery) => {
             break
 
         case 'add_product':
-            console.log("=========>", data)
+            addProductMessage(data, chatId, messageId, userStates)
             break
     }
 
@@ -233,8 +234,9 @@ bot.onText(/\/cancel/, (msg) => {
 });
 
 // Handle user input for token validation
-bot.on('message', (msg) => {
+bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
+    const user = msg.from;
 
     if (userStates[chatId] === 'awaiting_token' && 
         msg.text !== "/start" &&
@@ -249,25 +251,13 @@ bot.on('message', (msg) => {
         msg.text !== "/my_distribution") {
         const userInput = msg.text;
         // Validate the token format
-        const user =msg.from
-        validateToken(userInput, chatId, user);
+        validateToken(userInput, chatId, user, userStates);
+    }
+
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== undefined) {
+        const input = msg.text
+        console.log(input)
+        await addProduct(input, user, userStates[chatId])
+        delete userStates[chatId]; // Clear user state
     }
 });
-
-// Token validation function
-function validateToken(token, chatId, user) {
-    const tokenRegex = /^[0-9]{8,10}:[A-Za-z0-9_-]{35}$/; // Regex to validate token format
-
-    if (tokenRegex.test(token)) {
-        bot.getMe()
-            .then(() => {
-                addRobot(token, chatId, user)
-                delete userStates[chatId]; // Clear user state
-            })
-            .catch(() => {
-                bot.sendMessage(chatId, '机器人 Token 格式错误。发送 /cancel 取消设置。');
-            });
-    } else {
-        bot.sendMessage(chatId, '机器人 Token 格式错误。发送 /cancel 取消设置。');
-    }
-}
