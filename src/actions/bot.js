@@ -75,7 +75,7 @@ function botState(botData, chatId) {
                     text: '📦 商品列表',
                     callback_data: JSON.stringify({
                         action: 'products_list',
-                        data: ''
+                        botName: botData.user_name
                     })
                 }],
                 [{
@@ -96,7 +96,6 @@ function botState(botData, chatId) {
                     text: '🔙 返回',
                     callback_data: JSON.stringify({
                         action: 'back',
-                        data: ''
                     })
                 }]
             ],
@@ -150,7 +149,7 @@ function stopBotMessage(displayData, chatId, messageId) {
                             text: '📦 商品列表',
                             callback_data: JSON.stringify({
                                 action: 'products_list',
-                                data: ''
+                                botName: displayData.botUserName
                             })
                         }],
                         [{
@@ -171,7 +170,6 @@ function stopBotMessage(displayData, chatId, messageId) {
                             text: '🔙 返回',
                             callback_data: JSON.stringify({
                                 action: 'back',
-                                data: ''
                             })
                         }]
                     ],
@@ -184,11 +182,9 @@ function runBotMessage(displayData, chatId, messageId) {
     Bot.findOneAndUpdate({botUserName: displayData.botUserName}, {$set: {onoffState: true}})
         .then(async res => {
             let user;
-            console.log("res ====>", res)
             if(res.serviceUser !== '') {
                 user = await getUserInfo(res.serviceUser)
             }
-            console.log("user =====>", user)
             const potential = res.serviceUser !== '' ? `${user.firstName} (${res.serviceUser})` : '未设置'
             const textParas = {
                 botNameId: displayData.botUserName,
@@ -233,7 +229,7 @@ function runBotMessage(displayData, chatId, messageId) {
                                 text: '📦 商品列表',
                                 callback_data: JSON.stringify({
                                     action: 'products_list',
-                                    data: ''
+                                    botName: displayData.botUserName
                                 })
                             }],
                             [{
@@ -254,7 +250,6 @@ function runBotMessage(displayData, chatId, messageId) {
                                 text: '🔙 返回',
                                 callback_data: JSON.stringify({
                                     action: 'back',
-                                    data: ''
                                 })
                             }]
                         ],
@@ -360,7 +355,7 @@ async function setMeAsService(data, chatId) {
                                             text: '📦 商品列表',
                                             callback_data: JSON.stringify({
                                                 action: 'products_list',
-                                                data: ''
+                                                botName: res.botUserName
                                             })
                                         }],
                                         [{
@@ -381,7 +376,6 @@ async function setMeAsService(data, chatId) {
                                             text: '🔙 返回',
                                             callback_data: JSON.stringify({
                                                 action: 'back',
-                                                data: ''
                                             })
                                         }]
                                     ],
@@ -430,4 +424,8 @@ function validateToken(token, chatId, user, userStates) {
     }
 }
 
-module.exports = { validateToken, checkBotService, getBotList, setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }
+async function goback(chatId, messageId) {
+    await bot.deleteMessage(chatId, messageId)
+}
+
+module.exports = { goback, validateToken, checkBotService, getBotList, setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }

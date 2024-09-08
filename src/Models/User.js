@@ -14,6 +14,16 @@ const UserSchema = new Schema({
     userName: {
         type: String,
         required: true
+    },
+    shopId: {
+        type: Number,
+    },
+    wallet: {
+        type: String,
+    },
+    agree: {
+        type: Boolean,
+        required: true
     }
 })
 

@@ -1,8 +1,8 @@
 const bot = require('../bot')
 const Product = require('../Models/Product');
-const { hasProductMessage, noHasProductMessage, getAddProductMessage } = require('../utils');
+const { hasProductMessage, noHasProductMessage, getAddProductMessage, getAddSuccessMessage } = require('../utils');
 
-async function addProduct(pdtName, user, botUserName) {
+async function addProduct(pdtName, user, botUserName, chatId, messageId) {
     const productSpace = new Product({
         userId: user.id,
         botUserName: botUserName,
@@ -17,6 +17,20 @@ async function addProduct(pdtName, user, botUserName) {
             console.log('Product has been added!')
         })
         .catch(err => console.error(err));
+    const addSuccessMessage = getAddSuccessMessage()
+    bot.sendMessage(chatId, addSuccessMessage, {
+        reply_markup: {
+            inline_keyboard: [
+                [{
+                    text: `📦 ${pdtName} ✅`,
+                    callback_data: JSON.stringify({
+                        action: 'product'
+                    })
+                }]
+            ]
+        },
+        reply_to_message_id: messageId
+    })
 }
 
 async function checkProductsForBot(botUserName) {

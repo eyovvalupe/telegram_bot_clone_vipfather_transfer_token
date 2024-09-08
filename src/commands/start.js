@@ -9,7 +9,6 @@ module.exports = (bot, chatId, msg) => {
                 firstName: msg.from.first_name,
                 userName: msg.from.username
             }
-            console.log(data)
             addUser(data)
             const startMessage = getStartMessage()
             bot.sendMessage(chatId, startMessage, {
@@ -26,7 +25,7 @@ module.exports = (bot, chatId, msg) => {
                 const optionbar = options('start')
                 bot.sendMessage(
                     chatId, 
-                    "🎮请在输入框下方选择操作",
+                    "🎮 请在输入框下方选择操作",
                     optionbar
                 )
             })

@@ -1,4 +1,5 @@
 const axios = require("axios")
+const { getUserInfo } = require("./actions/user")
 
 function getHelpMessage() {
     return `
@@ -143,25 +144,67 @@ function getAddProductMessage() {
     `
 }
 
-// function validateToken(token, chatId) {
-//     const tokenRegex = /^[0-9]{8,10}:[A-Za-z0-9_-]{35}$/; // Regex to validate token format
+function getAddSuccessMessage() {
+    return `
+✅ 商品创建成功，请点击商品名称进行设置。
+    `
+}
 
-//     if (tokenRegex.test(token)) {
-//         bot.getMe()
-//             .then(() => {
-//                 bot.sendMessage(chatId, 'Valid bot API token!');
-//             })
-//             .catch(() => {
-//                 bot.sendMessage(chatId, 'Invalid bot API token. Please try again or type /cancel to cancel.');
-//                 // Prompt for token again
-//                 bot.sendMessage(chatId, 'Please enter your bot API token or type /cancel to cancel.');
-//             });
-//     } else {
-//         bot.sendMessage(chatId, 'Invalid format. Please enter a valid bot API token or type /cancel to cancel.');
-//         // Prompt for token again
-//         bot.sendMessage(chatId, 'Please enter your bot API token or type /cancel to cancel.');
-//     }
-// }
+function getStartWarning() {
+    return `
+您还没有店铺，请阅读创建店铺须知，同意后方可创建店铺。
+
+<b>创建店铺须知</b>
+
+👮‍♀️ 机器人遵守国际法，不收赌、毒、洗钱、诈骗、AI 换脸 脱衣、儿童涩情业务。一经发现或举报，直接冻结资金。关闭店铺，禁用机器人。
+--------------------
+👮‍♀️ The robot abides by international laws and does not accept gambling, drugs, money laundering, fraud, AI face-changing, stripping, or children's pornography businesses. Once discovered or reported, the funds will be frozen directly. Close the store and disable the bots.
+
+❌ 不收电报以外的业务，只收电报门槛群或个人创作者粉丝门槛。
+直播打赏、一对一裸聊等一概不收，一经发现或举报，直接冻结资金。关闭店铺，禁用机器人。
+--------------------
+❌ No business other than telegrams is accepted, only telegram threshold groups are accepted. Live broadcasts, one-to-one naked chats, etc. will not be accepted. Once discovered or reported, funds will be frozen directly. Close the store and disable the bots.
+
+⚠️ 请仔细阅读上述协议，如有疑问请联系客服 @GogoPlav。
+    `
+}
+
+function getCongratulationMessage(id) {
+    return `
+🎉 您的店铺已创建成功，商户ID：${id}
+    `
+}
+
+function getShopInfo(user) {
+    let walletInfo;
+    let availableTime;
+    if (user.wallet === '') {
+        walletInfo = '未设置';
+        availableTime = 12
+    } else {
+        walletInfo = user.wallet;
+        availableTime = 168
+    }
+    return `
+商户ID：${user.shopId}
+商户名称：${user.userId}的商户
+USDT(Trc20) 收款地址：${walletInfo}
+结算冻结时间：${availableTime} 小时（量大可谈）
+    `
+}
+
+function getSettingWalletMessage(user) {
+    let walletInfo;
+    if (user.wallet === '') {
+        walletInfo = '未设置';
+    } else walletInfo = user.wallet;
+    return `
+当前收款地址：${walletInfo}
+
+💎 请发送 TRC20 USDT 收款地址。
+⚠️ 请仔细检查地址，错误的地址将导致资金丢失。
+    `
+}
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -247,4 +290,4 @@ async function estimateTransactionFee(tronWeb, from, to, amount) {
     }
 }
 
-module.exports = { getAddProductMessage, hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, getProductMessage }
+module.exports = { getSettingWalletMessage, getShopInfo, getCongratulationMessage, getStartWarning, getAddSuccessMessage, getAddProductMessage, hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, getProductMessage }

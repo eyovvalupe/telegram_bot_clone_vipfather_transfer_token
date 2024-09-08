@@ -9,14 +9,15 @@ const update = require("./commands/update")
 const help = require("./commands/help")
 const robot = require("./commands/robot")
 const database = require('./database')
-const { getRobotMessage, getSettingServiceMessage } = require("./utils")
+const { getRobotMessage, getSettingServiceMessage, getSettingWalletMessage } = require("./utils")
 const productSettlement = require("./commands/productSettlement")
-const { addRobot, stopBotMessage, runBotMessage, setService, setMeAsService, validateToken } = require("./actions/bot")
+const { addRobot, stopBotMessage, runBotMessage, setService, setMeAsService, validateToken, goback } = require("./actions/bot")
 const options = require("./commands/options")
 const distributedProducts = require("./commands/distributedProducts")
 const products = require("./commands/products")
 const { addProductMessage, addProduct } = require("./actions/product")
 const chooseBot = require("./commands/chooseBot")
+const { setAgree, setWalletAddressMessage, getUserInfo, setWalletAddress } = require("./actions/user")
 
 database()
 
@@ -33,16 +34,28 @@ bot.setMyCommands([
     { command: "/help", description: "🤖 机器人使用帮助" }
 ]);
 
-bot.on('callback_query', (callbackQuery) => {
+bot.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
     const data = JSON.parse(callbackQuery.data);
     const messageId = callbackQuery.message.message_id;
     // Respond based on the button clicked
     switch (data.action) {
+        case 'agree':
+            // console.log(data)
+            setAgree(data.userId, chatId, messageId)
+            break
+
+        case 'setup_wallet_address':
+            userStates[chatId] = 'awaiting_wallet_address'
+            const user = await getUserInfo(data.userId);
+            const settingMessage = getSettingWalletMessage(user)
+            bot.sendMessage(chatId, settingMessage)
+            break
+
         case 'add_robot':
+            userStates[chatId] = 'awaiting_token'; // Set user state
             const robotMessage = getRobotMessage()
             bot.sendMessage(chatId, robotMessage);
-            userStates[chatId] = 'awaiting_token'; // Set user state
             break;
         
         case 'product_settlement':
@@ -72,6 +85,14 @@ bot.on('callback_query', (callbackQuery) => {
         case 'add_product':
             addProductMessage(data, chatId, messageId, userStates)
             break
+
+        case 'products_list':
+            chooseBot(data, chatId);
+            break
+
+        case 'back':
+            goback(chatId, messageId)
+            break
     }
 
     // Acknowledge the callback query to remove the loading state
@@ -81,14 +102,16 @@ bot.on('callback_query', (callbackQuery) => {
 // Start command
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
+    delete userStates[chatId]; // Clear user state
     start(bot, chatId, msg)
 });
 
 // Do something command
 bot.onText(/\/mercant_portal/, (msg) => {
     const chatId = msg.chat.id;
+    const user = msg.from;
     delete userStates[chatId]; // Clear user state
-    mercant(bot, chatId);
+    mercant(bot, chatId, user);
 });
 
 bot.onText(/\/my_distribution/, (msg) => {
@@ -129,71 +152,82 @@ bot.onText(/\/help/, (msg) => {
 bot.onText(/\🤖 机器人/, (msg) => {
     const chatId = msg.chat.id;
     const user = msg.from;
-    if (userStates[chatId]) delete userStates[chatId]; // Clear user state
-    robot(bot, chatId, user);
+    if (userStates[chatId] !== 'awaiting_wallet_address') {
+        delete userStates[chatId]; // Clear user state
+        robot(bot, chatId, user);
+    }
 });
 
 bot.onText(/\📦 商品/, (msg) => {
     const chatId = msg.chat.id;
     const messageId = msg.message_id;
     const user = msg.from;
-    if (!userStates[chatId]) {
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
+        delete userStates[chatId]; // Clear user state
         products(bot, chatId, messageId, user);
     }
 });
 
 bot.onText(/\👥 会员群/, (msg) => {
     const chatId = msg.chat.id;
-    if (!userStates[chatId]) {
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
+        delete userStates[chatId]; // Clear user state
         // mercant(bot, chatId);
     }
 });
 
 bot.onText(/\👣 每日访问/, (msg) => {
     const chatId = msg.chat.id;
-    if (!userStates[chatId]) {
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
+        delete userStates[chatId]; // Clear user state
         // mercant(bot, chatId);
     }
 });
 
 bot.onText(/\📋 店铺订单/, (msg) => {
     const chatId = msg.chat.id;
-    if (!userStates[chatId]) {
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
+        delete userStates[chatId]; // Clear user state
         // mercant(bot, chatId);
     }
 });
 
 bot.onText(/\📈 成交统计/, (msg) => {
     const chatId = msg.chat.id;
-    if (!userStates[chatId]) {
-        // mercant(bot, chatId);
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
+        delete userStates[chatId]; // Clear user state
     }
 });
 
 bot.onText(/\⚙️ 店铺设置/, (msg) => {
     const chatId = msg.chat.id;
-    if (!userStates[chatId]) {
-        // mercant(bot, chatId);
+    const user = msg.from;
+    if (userStates[chatId] !== 'awaiting_token') {
+        delete userStates[chatId]; // Clear user state
+        setWalletAddressMessage(chatId, user.id)
     }
 });
 
 bot.onText(/\💹 经营分析/, (msg) => {
     const chatId = msg.chat.id;
-    if (!userStates[chatId]) {
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
+        delete userStates[chatId]; // Clear user state
         // mercant(bot, chatId);
     }
 });
 
 bot.onText(/\💰 商家结算/, (msg) => {
     const chatId = msg.chat.id;
-    if (!userStates[chatId]) {
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
+        delete userStates[chatId]; // Clear user state
         // mercant(bot, chatId);
     }
 });
 
 bot.onText(/\🛍 我的店铺/, msg => {
     const chatId = msg.chat.id;
-    mercant(bot, chatId)
+    const user = msg.from;
+    mercant(bot, chatId, user)
 })
 
 bot.onText(/\💹 我的分销/, msg => {
@@ -225,7 +259,7 @@ bot.onText(/\💰 分销结算/, msg => {
 bot.onText(/\/cancel/, (msg) => {
     const chatId = msg.chat.id;
     const messageId = msg.message_id;
-    if (userStates[chatId]) {
+    if (userStates[chatId] !== undefined) {
         delete userStates[chatId]; // Clear user state
         cancel(bot, chatId, messageId)
     } else {
@@ -236,7 +270,9 @@ bot.onText(/\/cancel/, (msg) => {
 // Handle user input for token validation
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
+    const messageId = msg.message_id;
     const user = msg.from;
+    const input = msg.text
 
     if (userStates[chatId] === 'awaiting_token' && 
         msg.text !== "/start" &&
@@ -249,15 +285,27 @@ bot.on('message', async (msg) => {
         msg.text !== "/okx" && 
         msg.text !== "/my_chat" && 
         msg.text !== "/my_distribution") {
-        const userInput = msg.text;
         // Validate the token format
-        validateToken(userInput, chatId, user, userStates);
+        validateToken(input, chatId, user, userStates);
     }
 
-    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== undefined) {
-        const input = msg.text
-        console.log(input)
-        await addProduct(input, user, userStates[chatId])
+    if (userStates[chatId] === 'awaiting_wallet_address' && 
+        msg.text !== "/start" &&
+        msg.text !== "/cancel" && 
+        msg.text !== "/mercant_portal" && 
+        msg.text !== "⚙️ 店铺设置" && 
+        msg.text !== "/help" && 
+        msg.text !== "/update" && 
+        msg.text !== "/okx" && 
+        msg.text !== "/my_chat" && 
+        msg.text !== "/my_distribution") {
+        const userInput = msg.text;
+        // Validate the token format
+        await setWalletAddress(user.id, input, chatId)
+    }
+
+    if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== undefined && userStates[chatId] !=='awaiting_wallet_address') {
+        await addProduct(input, user, userStates[chatId], chatId, messageId)
         delete userStates[chatId]; // Clear user state
     }
 });
