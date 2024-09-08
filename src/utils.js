@@ -123,6 +123,20 @@ function getSettingServiceMessage() {
     `
 }
 
+function noHasProductMessage() {
+    return `
+您还没有创建任何商品，先创建商品吧。
+    `
+}
+
+function hasProductMessage(botUserName) {
+    return `
+🏠 首页链接：https://t.me/${botUserName}?start=home
+
+📦 机器人 @${botUserName} 拥有的商品列表：
+    `
+}
+
 function validateToken(token, chatId) {
     const tokenRegex = /^[0-9]{8,10}:[A-Za-z0-9_-]{35}$/; // Regex to validate token format
 
@@ -227,4 +241,4 @@ async function estimateTransactionFee(tronWeb, from, to, amount) {
     }
 }
 
-module.exports = { setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, validateToken, getProductMessage }
+module.exports = { hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, validateToken, getProductMessage }

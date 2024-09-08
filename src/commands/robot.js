@@ -3,9 +3,13 @@ const { getBotList } = require("../actions/bot")
 module.exports = async (bot, chatId, user) => {
         try {
             const data = await getBotList(user.id);
+            let status;
             const botlist = data.reduce((acc, cur) => {
+                if (cur.onoffState) {
+                    status = '▶'
+                } else status = '⛔'
                 acc.push([{
-                    text: `🤖 ${cur.botUserName} ▶`,
+                    text: `🤖 ${cur.botUserName} ${status}`,
                     callback_data: JSON.stringify({
                         action: 'run_bot',
                         botUserName: cur.botUserName

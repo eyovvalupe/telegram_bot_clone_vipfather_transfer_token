@@ -10,10 +10,12 @@ const help = require("./commands/help")
 const robot = require("./commands/robot")
 const database = require('./database')
 const { getRobotMessage, getSettingServiceMessage } = require("./utils")
-const products = require("./commands/products")
 const productSettlement = require("./commands/productSettlement")
 const { addRobot, stopBotMessage, runBotMessage, setService, setMeAsService } = require("./actions/bot")
 const options = require("./commands/options")
+const distributedProducts = require("./commands/distributedProducts")
+const products = require("./commands/products")
+const chooseBot = require("./commands/chooseBot")
 
 database()
 
@@ -34,7 +36,6 @@ bot.on('callback_query', (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
     const data = JSON.parse(callbackQuery.data);
     const messageId = callbackQuery.message.message_id;
-    const user = callbackQuery.message.from;
     // Respond based on the button clicked
     switch (data.action) {
         case 'add_robot':
@@ -60,7 +61,15 @@ bot.on('callback_query', (callbackQuery) => {
             break
         
         case 'set_me_as_service':
-            setMeAsService(data, user, chatId, messageId)
+            setMeAsService(data, chatId, messageId)
+            break
+
+        case 'chs_bot_for_pdts':
+            chooseBot(data, chatId);
+            break
+
+        case 'add_product':
+            console.log("=========>", data)
             break
     }
 
@@ -125,8 +134,10 @@ bot.onText(/\🤖 机器人/, (msg) => {
 
 bot.onText(/\📦 商品/, (msg) => {
     const chatId = msg.chat.id;
+    const messageId = msg.message_id;
+    const user = msg.from;
     if (!userStates[chatId]) {
-        // mercant(bot, chatId);
+        products(bot, chatId, messageId, user);
     }
 });
 
@@ -199,7 +210,7 @@ bot.onText(/\🌟 我的会员/, msg => {
 bot.onText(/\📦 分销商品/, msg => {
     const chatId = msg.chat.id;
     const messageId = msg.message_id;
-    products(bot, chatId, messageId);
+    distributedProducts(bot, chatId, messageId);
     
 })
 

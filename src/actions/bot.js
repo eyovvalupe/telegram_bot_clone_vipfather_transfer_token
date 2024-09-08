@@ -4,6 +4,7 @@ const { getAddBotErrorMessage, getBindBotMessage, getSettingServiceMessage, setB
 const axios = require('axios');
 const { setChildBot } = require('./childBot');
 const { getUserInfo } = require('./user');
+const { initializeProduct } = require('./product');
 
 async function addRobot(botToken, chatId, user) {
     Bot.findOne({token: botToken})
@@ -20,11 +21,12 @@ async function addRobot(botToken, chatId, user) {
                 serviceUser: '',
             });
             newBot.save()
-                .then(() => {
+                .then(async () => {
                     console.log('Bot saved!')
-                    botState(bot, botData, chatId)
                 })
                 .catch(err => console.error('Error saving bot token: ', err));
+            await initializeProduct(botData, user)
+            botState(botData, chatId)
         } else {
             const addBotMessage = getAddBotErrorMessage()
             bot.sendMessage(chatId, addBotMessage)
@@ -32,7 +34,7 @@ async function addRobot(botToken, chatId, user) {
     })
 }
 
-function botState(bot, botData, chatId) {
+function botState(botData, chatId) {
     bot.sendMessage(chatId, `机器人 @${botData.user_name} 绑定成功！请进入机器人，发送 /start 查看`)
     const textParas = {
         botNameId: botData.user_name,
@@ -181,8 +183,13 @@ function stopBotMessage(displayData, chatId, messageId) {
 function runBotMessage(displayData, chatId, messageId) {
     Bot.findOneAndUpdate({botUserName: displayData.botUserName}, {$set: {onoffState: true}})
         .then(async res => {
-            const user = await getUserInfo(res.serviceUser)
-            const potential = res.serviceUser !== null ? `${user.firstName} (${res.serviceUser})` : '未设置'
+            let user;
+            console.log("res ====>", res)
+            if(res.serviceUser !== '') {
+                user = await getUserInfo(res.serviceUser)
+            }
+            console.log("user =====>", user)
+            const potential = res.serviceUser !== '' ? `${user.firstName} (${res.serviceUser})` : '未设置'
             const textParas = {
                 botNameId: displayData.botUserName,
                 potential,
@@ -304,7 +311,7 @@ function setService(chatId, data) {
     })
 }
 
-async function setMeAsService(data, user, chatId, messageId) {
+async function setMeAsService(data, chatId) {
     console.log("data ==========>", data)
     let myId;
     await Bot.findOne({botUserName: data.sendBot})
@@ -387,11 +394,23 @@ async function setMeAsService(data, user, chatId, messageId) {
 }
 
 async function getBotList(userId) {
-    console.log(userId)
     let botlist;
     await Bot.find({userId: userId})
             .then(res => botlist = res);
     return botlist;
 }
 
-module.exports = { getBotList, setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }
+async function checkBotService(botUserName) {
+    let isBotHasService;
+    await Bot.findOne({botUserName})
+            .then(res => {
+                if (res !== null) {
+                    isBotHasService = true;
+                } else {
+                    isBotHasService = false;
+                }
+            })
+    return isBotHasService;
+}
+
+module.exports = { checkBotService, getBotList, setService, setMeAsService, runBotMessage, stopBotMessage, addRobot, getBotInfo }
