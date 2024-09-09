@@ -56,12 +56,17 @@ function getOkxMessage() {
     `
 }
 
-function getProductMessage() {
+function getProductMessage(user) {
+    const date = getDate()
+    let wallet;
+    if (user.wallet === undefined) {
+        wallet = '未设置'
+    } else wallet = user.wallet
     return `
 💴 <b>分销未结算金额: 0</b>
 💴 <b>可结算金额: 0</b>
 💴 <b>入账中金额: 0</b>
-📆 查询时间: 2024-09-05 22:42:38
+📆 查询时间: ${date}
 
 🛎 说明：
 - 入账时间为 24 小时，防止发生订单投诉无法退款。
@@ -73,7 +78,7 @@ function getProductMessage() {
 💸 大于500: 10.9%
 - 每笔转账都会在链上产生费用，建议大家大于1000再提现，降低转账成本。
 
-结算地址：
+结算地址：${wallet}
 发送 /set_user_trc20 更新收款地址。
     `
 }
@@ -206,6 +211,29 @@ function getSettingWalletMessage(user) {
     `
 }
 
+function getEverydayVisitData() {
+    return `
+<b>📈 最近十日访问统计</b>
+暂无数据
+    `
+}
+
+function getTransactionHistoryData() {
+    return `
+<b>近十天的每日销售统计：</b>
+
+暂无数据
+    `
+}
+
+function getAnalysisData() {
+    return `
+<b>商家近三日销售数据</b>：（包含分销数据）
+
+暂无数据
+    `
+}
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -290,4 +318,62 @@ async function estimateTransactionFee(tronWeb, from, to, amount) {
     }
 }
 
-module.exports = { getSettingWalletMessage, getShopInfo, getCongratulationMessage, getStartWarning, getAddSuccessMessage, getAddProductMessage, hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, getProductMessage }
+function getSendTransactionMessage(user) {
+    const date = getDate();
+    let wallet;
+    if (user.wallet === '') {
+        wallet = '未设置'
+    } else wallet = user.wallet
+    return `
+💴 <b>商家未结算金额: 0</b>
+📆 <b>可结算时间: ${date}</b>
+💴 <b>可结算金额: 0</b>
+💴 <b>入账中金额: 0</b>
+⚠️ <b>此金额不再包含分给分销商的钱，分销商收入将独立结算给分销人。请在创建的分销上设置分销人，即可结算。</b>
+📆 查询时间: ${date}
+
+🛎 说明：
+- 入账时间为 24 小时，防止发生订单投诉无法退款。
+- 金额包含直接发送单个时长商品链接的金额，大于等于所有分销商金额总和。
+
+📢 结算手续费：
+💲 转账费用: 2u
+💸 小于500: 14.9%
+💸 大于500: 10.9%
+- 每笔转账都会在链上产生费用，建议大家大于1000再提现，降低转账成本。
+
+结算地址：${wallet}
+发送 /set_trc20 更新收款地址。
+    `
+}
+
+function getProductDetailMessage(product) {
+    return `
+商品名称：${product.productName}
+商品描述：
+排序优先级：${product.priority}
+商品包含群：${product.productGroup.length}个
+<b>购买链接</b>：${product.productUrl}
+    `
+}
+
+function getDate() {
+    // Create a new Date object
+    const currentDate = new Date();
+
+    // Extract components
+    const year = String(currentDate.getFullYear()).padStart(4, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const hours = String(currentDate.getHours()).padStart(2, '0');
+    const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+    const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+
+    // Format date and time
+    const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+    // Display the formatted date and time
+    return formattedDateTime;
+}
+
+module.exports = { getProductDetailMessage, getSendTransactionMessage, getAnalysisData, getTransactionHistoryData, getEverydayVisitData, getDate, getSettingWalletMessage, getShopInfo, getCongratulationMessage, getStartWarning, getAddSuccessMessage, getAddProductMessage, hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, getProductMessage }

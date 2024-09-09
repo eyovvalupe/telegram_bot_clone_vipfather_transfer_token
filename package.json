@@ -3,8 +3,9 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "start": "node src/main.js",
+        "start": "node src/devtest.js",
         "dev": "nodemon src/button.js",
+        "testing": "nodemon src/multisend.js",
         "devtest": "nodemon src/devtest.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -17,6 +18,7 @@
         "axios": "^1.7.5",
         "bip39": "^3.1.0",
         "dotenv": "^16.4.5",
+        "express": "^4.19.2",
         "hdkey": "^2.1.0",
         "mongoose": "^8.6.1",
         "node-telegram-bot-api": "^0.66.0",

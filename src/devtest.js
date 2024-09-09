@@ -15,9 +15,15 @@ const { addRobot, stopBotMessage, runBotMessage, setService, setMeAsService, val
 const options = require("./commands/options")
 const distributedProducts = require("./commands/distributedProducts")
 const products = require("./commands/products")
-const { addProductMessage, addProduct } = require("./actions/product")
+const { addProductMessage, addProduct, getPdtInfo, productDetailById } = require("./actions/product")
 const chooseBot = require("./commands/chooseBot")
 const { setAgree, setWalletAddressMessage, getUserInfo, setWalletAddress } = require("./actions/user")
+const chattingGroup = require("./commands/chattingGroup")
+const visitData = require("./commands/visitData")
+const orderBook = require("./commands/orderBook")
+const transactionHistory = require("./commands/transactionHistory")
+const analysis = require("./commands/analysis")
+const sendTransaction = require("./commands/sendTransaction")
 
 database()
 
@@ -45,7 +51,7 @@ bot.on('callback_query', async (callbackQuery) => {
             setAgree(data.userId, chatId, messageId)
             break
 
-        case 'setup_wallet_address':
+        case 'set_user_trc20':
             userStates[chatId] = 'awaiting_wallet_address'
             const user = await getUserInfo(data.userId);
             const settingMessage = getSettingWalletMessage(user)
@@ -90,6 +96,12 @@ bot.on('callback_query', async (callbackQuery) => {
             chooseBot(data, chatId);
             break
 
+        case 'product_detail':
+            // console.log(data)
+            // getPdtInfo(data.pdtId)
+            productDetailById(data.pdtId, chatId)
+            break
+
         case 'back':
             goback(chatId, messageId)
             break
@@ -103,7 +115,7 @@ bot.on('callback_query', async (callbackQuery) => {
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     delete userStates[chatId]; // Clear user state
-    start(bot, chatId, msg)
+    start(bot, chatId, msg);
 });
 
 // Do something command
@@ -172,30 +184,34 @@ bot.onText(/\👥 会员群/, (msg) => {
     const chatId = msg.chat.id;
     if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
         delete userStates[chatId]; // Clear user state
-        // mercant(bot, chatId);
+        chattingGroup(bot, chatId);
     }
 });
 
 bot.onText(/\👣 每日访问/, (msg) => {
     const chatId = msg.chat.id;
+    const messageId = msg.message_id;
     if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
         delete userStates[chatId]; // Clear user state
-        // mercant(bot, chatId);
+        visitData(bot, chatId, messageId);
     }
 });
 
 bot.onText(/\📋 店铺订单/, (msg) => {
     const chatId = msg.chat.id;
+    const messageId = msg.message_id;
     if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
         delete userStates[chatId]; // Clear user state
-        // mercant(bot, chatId);
+        orderBook(bot, chatId, messageId);
     }
 });
 
 bot.onText(/\📈 成交统计/, (msg) => {
     const chatId = msg.chat.id;
+    const messageId = msg.message_id;
     if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
         delete userStates[chatId]; // Clear user state
+        transactionHistory(bot, chatId, messageId)
     }
 });
 
@@ -212,15 +228,16 @@ bot.onText(/\💹 经营分析/, (msg) => {
     const chatId = msg.chat.id;
     if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
         delete userStates[chatId]; // Clear user state
-        // mercant(bot, chatId);
+        analysis(bot, chatId);
     }
 });
 
 bot.onText(/\💰 商家结算/, (msg) => {
     const chatId = msg.chat.id;
+    const user = msg.from;
     if (userStates[chatId] !== 'awaiting_token' && userStates[chatId] !== 'awaiting_wallet_address') {
         delete userStates[chatId]; // Clear user state
-        // mercant(bot, chatId);
+        sendTransaction(bot, chatId, user);
     }
 });
 
@@ -252,7 +269,8 @@ bot.onText(/\📦 分销商品/, msg => {
 bot.onText(/\💰 分销结算/, msg => {
     const chatId = msg.chat.id;
     const messageId = msg.message_id;
-    productSettlement(bot, chatId);
+    const user = msg.from;
+    productSettlement(bot, chatId, user);
 })
 
 // Cancel command

@@ -24,6 +24,10 @@ const UserSchema = new Schema({
     agree: {
         type: Boolean,
         required: true
+    },
+    lastVisitDate: {
+        type: String,
+        required: true
     }
 })
 

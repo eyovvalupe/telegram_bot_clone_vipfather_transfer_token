@@ -1,11 +1,14 @@
+const { getTransactionHistoryData } = require("../utils")
 
 module.exports = (bot, chatId, messageId) => {
     try {
+        const transactionData = getTransactionHistoryData()
         bot.sendMessage(
             chatId, 
-            "设置已取消", 
+            transactionData, 
             {
-                reply_to_message_id: messageId,
+            parse_mode: 'HTML',
+            reply_to_message_id: messageId,
             }
         )
     } catch (error) {

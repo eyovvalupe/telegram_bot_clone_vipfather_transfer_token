@@ -1,22 +1,30 @@
 const User = require('../Models/User')
 const bot = require('../bot')
-const { getCongratulationMessage, getShopInfo } = require('../utils')
+const { getCongratulationMessage, getShopInfo, getDate } = require('../utils')
 
 function addUser(data) {
     User.findOne({userId: data.userId})
     .then(res => {
+        console.log('user =======> ', res)
         if (res === null) {
+            const date = getDate()
             const newUser = new User({
                 userId: data.userId,
                 firstName: data.firstName,
                 userName: data.userName,
                 shopId: '',
                 wallet: '',
-                agree: false
+                agree: false,
+                lastVisitDate: date
             })
             newUser.save()
                 .then(() => console.log('user saved!'))
                 .catch(err => console.error(err))
+        } else {
+            const date = getDate()
+            res.lastVisitDate = date;
+            res.save()
+            console.log('updated successfully!')
         }
     })
 }
@@ -77,7 +85,7 @@ async function setWalletAddressMessage(chatId, userId) {
                 [{
                     text: '💎 设置USDT',
                     callback_data: JSON.stringify({
-                        action: 'setup_wallet_address',
+                        action: 'set_user_trc20',
                         userId
                     }) 
                 }],

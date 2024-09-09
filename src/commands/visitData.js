@@ -1,11 +1,14 @@
+const { getEverydayVisitData } = require("../utils")
 
 module.exports = (bot, chatId, messageId) => {
     try {
+        const everydayVisitData = getEverydayVisitData()
         bot.sendMessage(
             chatId, 
-            "设置已取消", 
+            everydayVisitData, 
             {
-                reply_to_message_id: messageId,
+            parse_mode: 'HTML',
+            reply_to_message_id: messageId,
             }
         )
     } catch (error) {
