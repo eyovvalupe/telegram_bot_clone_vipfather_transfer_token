@@ -10,24 +10,16 @@ const {
   isEmpty,
 } = require("../utils");
 const axios = require("axios");
-const { setChildBot } = require("./childBot");
 const { getUserInfo } = require("./user");
-require("dotenv").config()
+const resetwebhook = require("../resetwebhook");
+require("dotenv").config();
 
 async function addRobot(botToken, chatId, user) {
   Bot.findOne({ token: botToken }).then(async (res) => {
     if (res === null) {
       const botData = await getBotInfo(botToken);
-      let webhook;
-      await getBotWebhookState(botToken)
-        .then(result => {
-            webhook = result
-        })
-        .catch(err => console.error(err));
-      console.log(webhook)
-      if (isEmpty(webhook)) {
-        
-      }
+      resetwebhook(botToken, process.env.SERVER_URL)
+        .then(res => console.log(res))
       const newBot = new Bot({
         token: botToken,
         userId: user.id,
@@ -45,7 +37,7 @@ async function addRobot(botToken, chatId, user) {
           console.log("Bot saved!");
         })
         .catch((err) => console.error("Error saving bot token: ", err));
-      
+
       botState(botData, chatId);
     } else {
       const addBotMessage = getAddBotErrorMessage();
@@ -143,12 +135,12 @@ function stopBotMessage(displayData, chatId, messageId) {
     { $set: { onoffState: false } }
   ).then(async (res) => {
     let potential;
-    
+
     if (isEmpty(res.serviceUser)) {
-        potential = "未设置"
+      potential = "未设置";
     } else {
-        const user = await getUserInfo(res.serviceUser);
-        potential = `${user.firstName} (${res.serviceUser})`;
+      const user = await getUserInfo(res.serviceUser);
+      potential = `${user.firstName} (${res.serviceUser})`;
     }
 
     const textParas = {
@@ -240,14 +232,13 @@ function runBotMessage(displayData, chatId, messageId) {
     { botName: displayData.botName },
     { $set: { onoffState: true } }
   ).then(async (res) => {
-
     let potential;
-    
+
     if (isEmpty(res.serviceUser)) {
-        potential = "未设置"
+      potential = "未设置";
     } else {
-        const user = await getUserInfo(res.serviceUser);
-        potential = `${user.firstName} (${res.serviceUser})`;
+      const user = await getUserInfo(res.serviceUser);
+      potential = `${user.firstName} (${res.serviceUser})`;
     }
 
     const textParas = {
@@ -362,7 +353,7 @@ async function getBotInfo(token) {
 }
 
 function setService(chatId, data) {
-    console.log(data)
+  console.log(data);
 
   const settingServiceMessage = getSettingServiceMessage();
   bot
@@ -536,9 +527,7 @@ async function goback(chatId, messageId) {
 }
 
 async function getBotWebhookState(botToken) {
-  const url = new URL(
-    `https://api.telegram.org/bot${botToken}/getWebhookInfo`
-  );
+  const url = new URL(`https://api.telegram.org/bot${botToken}/getWebhookInfo`);
 
   return new Promise((resolve, reject) => {
     const req = https
@@ -550,7 +539,7 @@ async function getBotWebhookState(botToken) {
         res.on("end", () => {
           const result = JSON.parse(data).result;
           console.log("Webhook set response:", result.url);
-          resolve(result.url)
+          resolve(result.url);
           if (result.url !== "") {
             state = true;
           }
@@ -561,17 +550,31 @@ async function getBotWebhookState(botToken) {
 }
 
 async function setWebhook(botToken) {
-  const url = new URL(`https://api.telegram.org/bot${botToken}/setWebhook`);
-  console.log(process.env.SERVER_URL)
-  // url.searchParams.append("url", process.env.SERVER_URL);
+  const url = new URL(`https://api.telegram.org/bot${botToken}/setWebhook?url=${process.env.SERVER_URL}`);
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, (res) => {
+        let data = "";
 
-  // https
-  //   .get(url, (resp) => {
-  //     console.log(resp);
-  //   })
-  //   .on("error", (err) => {
-  //     console.error("Error setting webhook:", err.message);
-  //   });
+        // Listen for data chunks
+        res.on("data", (chunk) => {
+          data += chunk.toString();
+        });
+
+        // When the response ends, resolve the Promise with the data
+        res.on("end", () => {
+          try {
+            const jsonData = JSON.parse(data); // Parse JSON data if needed
+            resolve(jsonData);
+          } catch (error) {
+            reject(new Error("Failed to parse JSON data: " + error.message));
+          }
+        });
+      })
+      .on("error", (error) => {
+        reject(new Error("Request failed: " + error.message));
+      });
+  });
 }
 
 module.exports = {

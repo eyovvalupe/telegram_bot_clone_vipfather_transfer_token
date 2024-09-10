@@ -2,15 +2,15 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const fetch = require("node-fetch");
 const { getUserDetails } = require("./actions/user");
-const { getBotWebhookState } = require("./actions/bot");
-const botToken = "7350756188:AAH_dZqGJDMDUdgY6YpJsk3SvRqAb8bRR1Q";
+// const botToken = "7350756188:AAH_dZqGJDMDUdgY6YpJsk3SvRqAb8bRR1Q";
+// const botToken = '7307700056:AAFS_khk783917vQl5B2YPSgUBjQRnnOWW8';
+const botToken = '7252471886:AAE72kRtT66Dft2xbq9ZWNCtFzF6JQ-hiAo';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Replace 'YOUR_BOT_TOKEN' with your actual bot token
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${botToken}`;
-const serverUrl = "https://fc3c-188-43-136-41.ngrok-free.app/webhook";
 
 // Middleware
 app.use(bodyParser.json());
@@ -22,14 +22,6 @@ let userMessages = {};
 // Set up a route to handle incoming updates
 app.post("/webhook", async (req, res) => {
   const update = req.body;
-  let webhook;
-  await getBotWebhookState(botToken)
-    .then(result => {
-      webhook = result
-    })
-    .catch(err => console.error(err));
-
-  console.log("http result ===========> ", webhook)
 
   // Check if the message is from a user
   if (update.message) {
@@ -89,32 +81,3 @@ async function sendMessage(chatId, sendText, data) {
     headers: { "Content-Type": "application/json" },
   });
 }
-
-async function setWebhook(botapitoken) {
-  const url = new URL(`https://api.telegram.org/bot${botapitoken}/setWebhook`);
-  url.searchParams.append("url", serverUrl);
-
-  https
-    .get(url, (resp) => {
-      console.log(resp);
-    })
-    .on("error", (err) => {
-      console.error("Error setting webhook:", err.message);
-    });
-}
-
-//https://9ba6-188-43-136-41.ngrok-free.app
-//curl "https://api.telegram.org/6448720112:AAHjsweIOly4kpbo2z94E5cCO4zgqlRCRac/getWebhookInfo"
-//curl -X POST "https://api.telegram.org/bot6448720112:AAHjsweIOly4kpbo2z94E5cCO4zgqlRCRac/setWebhook" -d "url=https://9ba6-188-43-136-41.ngrok-free.app/webhook"
-
-//Invoke-RestMethod -Uri "https://api.telegram.org/bot6448720112:AAHjsweIOly4kpbo2z94E5cCO4zgqlRCRac/setWebhook" -Method Post -Body "url=https://https://ffa5-188-43-136-46.ngrok-free.app/webhook"
-
-// async function setWebHook() {
-//     try {
-//         await bot.telegram.setWebhook(`${TELEGRAM_API_URL}/setWebhook?url=${URL}`);
-//         console.log('Webhook set successfully');
-//     } catch (error) {
-//         console.error('Error setting webhook:', error);
-//     }
-// };
-
