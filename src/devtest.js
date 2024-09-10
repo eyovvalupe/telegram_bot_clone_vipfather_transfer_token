@@ -9,13 +9,13 @@ const update = require("./commands/update")
 const help = require("./commands/help")
 const robot = require("./commands/robot")
 const database = require('./database')
-const { getRobotMessage, getSettingServiceMessage, getSettingWalletMessage } = require("./utils")
+const { getRobotMessage, getSettingWalletMessage } = require("./utils")
 const productSettlement = require("./commands/productSettlement")
-const { addRobot, stopBotMessage, runBotMessage, setService, setMeAsService, validateToken, goback } = require("./actions/bot")
+const { stopBotMessage, runBotMessage, setService, setMeAsService, validateToken, goback } = require("./actions/bot")
 const options = require("./commands/options")
 const distributedProducts = require("./commands/distributedProducts")
 const products = require("./commands/products")
-const { addProductMessage, addProduct, getPdtInfo, productDetailById } = require("./actions/product")
+const { addProductMessage, addProduct, productDetailById } = require("./actions/product")
 const chooseBot = require("./commands/chooseBot")
 const { setAgree, setWalletAddressMessage, getUserInfo, setWalletAddress } = require("./actions/user")
 const chattingGroup = require("./commands/chattingGroup")
@@ -24,6 +24,14 @@ const orderBook = require("./commands/orderBook")
 const transactionHistory = require("./commands/transactionHistory")
 const analysis = require("./commands/analysis")
 const sendTransaction = require("./commands/sendTransaction")
+
+const express = require("express");
+const bodyParser = require("body-parser");
+const { getUserDetails } = require("./actions/user");
+const { sendMessage } = require("./actions/bot");
+
+const app = express();
+app.use(bodyParser.json());
 
 database()
 

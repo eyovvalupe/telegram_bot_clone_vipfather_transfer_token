@@ -357,6 +357,10 @@ function getProductDetailMessage(product) {
     `
 }
 
+function getBotStartMessage() {
+    
+}
+
 function getDate() {
     // Create a new Date object
     const currentDate = new Date();

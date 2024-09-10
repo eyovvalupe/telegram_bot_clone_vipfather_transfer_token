@@ -584,6 +584,13 @@ async function sendMessage(chatId, sendText, data, TELEGRAM_API_URL) {
   });
 }
 
+async function getBotInfoByToken(token) {
+  let bot;
+  await Bot.findOne({token})
+    .then(res => bot = res);
+  return bot
+}
+
 module.exports = {
   setWebhook,
   getBotWebhookState,
@@ -597,5 +604,6 @@ module.exports = {
   stopBotMessage,
   addRobot,
   getBotInfo,
+  getBotInfoByToken,
   sendMessage
 };

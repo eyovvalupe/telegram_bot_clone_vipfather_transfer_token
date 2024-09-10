@@ -1,21 +1,20 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const fetch = require("node-fetch");
 const { getUserDetails } = require("./actions/user");
-const { sendMessage } = require("./actions/bot");
-const bot = require('./bot')
+const { sendMessage, getBotInfoByToken, getBotInfo } = require("./actions/bot");
+
+const database = require('./database');
+const { isEmpty } = require("./utils");
+
+database()
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-bot.onText('yaaa', (msg) => {
-  const chatId = msg.chat.id
-  bot.sendMessage(chatId,'I am here')
-})
-// Middleware
 app.use(bodyParser.json());
 
-const adminId = 7123669053; // Admin's Telegram user ID
+
+const port = process.env.PORT || 3000;
+
+const adminId = {}; // Admin's Telegram user ID
 const userIds = [];
 let userMessages = {};
 
@@ -23,8 +22,13 @@ let userMessages = {};
 app.post("/webhook/:botToken", async (req, res) => {
   const update = req.body;
 
-  console.log(req.params.botToken)
   const TELEGRAM_API_URL = `https://api.telegram.org/bot${req.params.botToken}`;
+
+  // const botInfo = await getBotInfo(req.params.botToken)
+  // console.log(botInfo)
+  const botToken = req.params.botToken
+  const botInfo = await getBotInfoByToken(botToken)
+  if (isEmpty(adminId[botInfo.botId])) adminId[botInfo.botId] = parseInt(botInfo.serviceUser);
 
   // Check if the message is from a user
   if (update.message) {
@@ -34,9 +38,9 @@ app.post("/webhook/:botToken", async (req, res) => {
     const messageId = msg.message_id;
 
     // // Check if the message is from the admin
-    if (chatId === adminId && !msg.reply_to_message) {
+    if (chatId === adminId[botInfo.botId] && !msg.reply_to_message) {
       await sendMessage(chatId, "You have to reply one message", {}, TELEGRAM_API_URL);
-    } else if (messageText !== "/start" && chatId !== adminId) {
+    } else if (messageText !== "/start" && chatId !== adminId[botInfo.botId]) {
       if (!userIds.includes(chatId)) userIds.push(parseInt(chatId));
       //       // Store user messages
       if (!userMessages) {
@@ -52,18 +56,34 @@ app.post("/webhook/:botToken", async (req, res) => {
 <b>Forwarded from @${userInfo.username}</b>
 ${messageText}
         `;
-      await sendMessage(adminId, showMessage, { parse_mode: "HTML" }, TELEGRAM_API_URL);
+      await sendMessage(adminId[botInfo.botId], showMessage, { parse_mode: "HTML" }, TELEGRAM_API_URL);
+    } else if (messageText !== "/start" && chatId === adminId[botInfo.botId]) {
+      if (!userMessages) {
+        userMessages = {};
+      }
+      userMessages[messageId] = {
+        chatId,
+        messageText,
+      };
     }
 
     if (msg.reply_to_message) {
-      const messagetoreplyid = (
-        parseInt(msg.reply_to_message.message_id) - 1
-      ).toString();
-      const userId = userMessages[messagetoreplyid]["chatId"];
+      const messagetoreplyid = (msg.reply_to_message.message_id - 1).toString();
+      const userId = userMessages[messagetoreplyid].chatId;
       await sendMessage(userId, messageText, {
         reply_to_message_id: messagetoreplyid,
       }, TELEGRAM_API_URL);
     }
+
+    // if (chatId !== adminId[botInfo.botId] && msg.reply_to_message) {
+    //   console.log("reply message ===========> ", msg.reply_to_message)
+    //   console.log("user messages ============> ", userMessages)
+    //   const messagetoreplyid = (msg.reply_to_message.message_id - 1).toString();
+    //   console.log(userMessages[messagetoreplyid])
+    //   const userId = userMessages[messagetoreplyid].chatId;
+    //   console.log(userId)
+
+    // }
   }
 
   res.sendStatus(200); // Respond to Telegram
