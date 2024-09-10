@@ -9,10 +9,10 @@ module.exports = async (bot, chatId, user) => {
                     status = '▶'
                 } else status = '⛔'
                 acc.push([{
-                    text: `🤖 ${cur.botUserName} ${status}`,
+                    text: `🤖 ${cur.botName} ${status}`,
                     callback_data: JSON.stringify({
                         action: 'run_bot',
-                        botUserName: cur.botUserName
+                        botName: cur.botName
                     })
                 }])
                 return acc;

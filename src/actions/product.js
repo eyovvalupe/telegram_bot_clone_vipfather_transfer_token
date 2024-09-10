@@ -3,15 +3,15 @@ const Product = require('../Models/Product');
 const { hasProductMessage, noHasProductMessage, getAddProductMessage, getAddSuccessMessage, getProductDetailMessage } = require('../utils');
 const { getUserInfo } = require('./user');
 
-async function addProduct(pdtName, user, botUserName, chatId, messageId) {
+async function addProduct(pdtName, user, botName, chatId, messageId) {
     const productSpace = new Product({
         userId: user.id,
-        botUserName: botUserName,
+        botName: botName,
         productName: pdtName,
         productDescription: '',
         priority: 0,
         productGroup: [],
-        productUrl: `https://t.me/${botUserName}?start=home`
+        productUrl: `https://t.me/${botName}?start=home`
     });
     await productSpace.save()
         .then(() => {
@@ -25,7 +25,7 @@ async function addProduct(pdtName, user, botUserName, chatId, messageId) {
                 [{
                     text: `📦 ${pdtName} ✅`,
                     callback_data: JSON.stringify({
-                        action: 'product'
+                        action: 'product_detail'
                     })
                 }]
             ]
@@ -34,9 +34,9 @@ async function addProduct(pdtName, user, botUserName, chatId, messageId) {
     })
 }
 
-async function checkProductsForBot(botUserName) {
+async function checkProductsForBot(botName) {
     let hasPdts;
-    await Product.findOne({botUserName})
+    await Product.findOne({botName})
             .then(res => {
                 if (res ===null) {
                     hasPdts = false;
@@ -45,10 +45,10 @@ async function checkProductsForBot(botUserName) {
     return hasPdts;
 }
 
-async function productInfoMessage(chatId, hasPdts, botUserName) {
+async function productInfoMessage(chatId, hasPdts, botName) {
     if (hasPdts) {
-        const hasPdtsMessage = hasProductMessage(botUserName)
-        const products = await getPdtListFromBotUSerName(botUserName)
+        const hasPdtsMessage = hasProductMessage(botName)
+        const products = await getPdtListFrombotName(botName)
         const pdts = products.reduce((acc, cur) => {
             acc.push([{
                 text: `📦 ${cur.productName} ✅`,
@@ -66,7 +66,7 @@ async function productInfoMessage(chatId, hasPdts, botUserName) {
                         text: '➕ 创建商品',
                         callback_data: JSON.stringify({
                             action: 'add_product',
-                            botUserName
+                            botName
                         })
                     }],
                     ...pdts,
@@ -101,7 +101,7 @@ async function productInfoMessage(chatId, hasPdts, botUserName) {
                         text: '➕ 创建商品',
                         callback_data: JSON.stringify({
                             action: 'add_product',
-                            botUserName
+                            botName
                         })
                     }]
                 ]
@@ -110,9 +110,9 @@ async function productInfoMessage(chatId, hasPdts, botUserName) {
     }
 }
 
-async function getPdtListFromBotUSerName(botUserName) {
+async function getPdtListFrombotName(botName) {
     let pdtList;
-    await Product.find({botUserName})
+    await Product.find({botName})
         .then(res => {
             pdtList = res;
         });
@@ -125,7 +125,7 @@ async function addProductMessage(data, chatId, messageId, userStates) {
         reply_to_message_id: messageId 
     })
     console.log(data)
-    userStates[chatId] = `${data.botUserName}`
+    userStates[chatId] = `${data.botName}`
 }
 
 async function getPdtInfo(id) {
@@ -145,7 +145,7 @@ async function productDetailById(id, chatId) {
             inline_keyboard: [
                 [{
                     text: '🖼 设置封面',
-                    url: `https://t.me/${product.botUserName}`
+                    url: `https://t.me/${product.botName}`
                 }],
                 [{
                     text: '📝 设置名称',

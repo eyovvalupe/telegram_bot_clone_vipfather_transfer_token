@@ -100,10 +100,10 @@ function getBindBotMessage(textParas) {
     `
 }
 
-function setBindBotMessageTurnOn(botUserName, user) {
+function setBindBotMessageTurnOn(botName, user) {
     return `
 当前绑定的机器人：
-@${botUserName}
+@${botName}
 客服账号：${user.firstName} (${user.userId})
 授权状态：已授权
 运行开关：开启
@@ -111,10 +111,10 @@ function setBindBotMessageTurnOn(botUserName, user) {
     `
 }
 
-function setBindBotMessageTurnOff(botUserName, user) {
+function setBindBotMessageTurnOff(botName, user) {
     return `
 当前绑定的机器人：
-@${botUserName}
+@${botName}
 客服账号：${user.firstName} (${user.userId})}
 授权状态：已授权
 运行开关：关闭
@@ -135,11 +135,11 @@ function noHasProductMessage() {
     `
 }
 
-function hasProductMessage(botUserName) {
+function hasProductMessage(botName) {
     return `
-🏠 首页链接：https://t.me/${botUserName}?start=home
+🏠 首页链接：https://t.me/${botName}?start=home
 
-📦 机器人 @${botUserName} 拥有的商品列表：
+📦 机器人 @${botName} 拥有的商品列表：
     `
 }
 
@@ -376,4 +376,24 @@ function getDate() {
     return formattedDateTime;
 }
 
-module.exports = { getProductDetailMessage, getSendTransactionMessage, getAnalysisData, getTransactionHistoryData, getEverydayVisitData, getDate, getSettingWalletMessage, getShopInfo, getCongratulationMessage, getStartWarning, getAddSuccessMessage, getAddProductMessage, hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, getProductMessage }
+function isEmpty(value) {
+    if (value == null) {
+        // Check for null or undefined
+        return true;
+    }
+
+    if (typeof value === 'string' || Array.isArray(value)) {
+        // Check for empty string or empty array
+        return value.length === 0;
+    }
+
+    if (typeof value === 'object') {
+        // Check for empty object
+        return Object.keys(value).length === 0;
+    }
+
+    // For all other types, consider non-empty
+    return false;
+}
+
+module.exports = { isEmpty, getProductDetailMessage, getSendTransactionMessage, getAnalysisData, getTransactionHistoryData, getEverydayVisitData, getDate, getSettingWalletMessage, getShopInfo, getCongratulationMessage, getStartWarning, getAddSuccessMessage, getAddProductMessage, hasProductMessage, noHasProductMessage, setBindBotMessageTurnOn, setBindBotMessageTurnOff, getSettingServiceMessage, getBindBotMessage, getAddBotErrorMessage, getHelpMessage, getStartMessage, sleep, fetchTransactionInfoFromTronGrid, calculateGasFee, estimateTransactionFee, getOkxMessage, getRobotMessage, getProductMessage }

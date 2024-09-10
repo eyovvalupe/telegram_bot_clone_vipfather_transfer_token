@@ -7,10 +7,10 @@ module.exports =async (bot, chatId, messageId, user) => {
             const message = "请选择机器人，以查看机器人绑定的商品："
             const botlist = data.reduce((acc, cur) => {
                 acc.push([{
-                    text: `🤖 ${cur.botUserName} ▶`,
+                    text: `🤖 ${cur.botName} ▶`,
                     callback_data: JSON.stringify({
                         action: 'chs_bot_for_pdts',
-                        botName: cur.botUserName,
+                        botName: cur.botName,
                     })
                 }])
                 return acc;

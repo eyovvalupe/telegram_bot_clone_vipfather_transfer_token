@@ -7,33 +7,45 @@ const {
   getSettingServiceMessage,
   setBindBotMessageTurnOff,
   setBindBotMessageTurnOn,
+  isEmpty,
 } = require("../utils");
 const axios = require("axios");
 const { setChildBot } = require("./childBot");
 const { getUserInfo } = require("./user");
-// const { initializeProduct } = require('./product');
+require("dotenv").config()
 
 async function addRobot(botToken, chatId, user) {
   Bot.findOne({ token: botToken }).then(async (res) => {
     if (res === null) {
       const botData = await getBotInfo(botToken);
+      let webhook;
+      await getBotWebhookState(botToken)
+        .then(result => {
+            webhook = result
+        })
+        .catch(err => console.error(err));
+      console.log(webhook)
+      if (isEmpty(webhook)) {
+        
+      }
       const newBot = new Bot({
         token: botToken,
         userId: user.id,
         botId: botData.id,
         botFirstName: botData.first_name,
-        botUserName: botData.user_name,
+        botName: botData.user_name,
         onoffState: true,
         serviceUser: "",
         webhook: "",
       });
+
       newBot
         .save()
         .then(async () => {
           console.log("Bot saved!");
         })
         .catch((err) => console.error("Error saving bot token: ", err));
-      // await initializeProduct(botData, user)
+      
       botState(botData, chatId);
     } else {
       const addBotMessage = getAddBotErrorMessage();
@@ -62,14 +74,13 @@ function botState(botData, chatId) {
             text: "⛔ 停止",
             callback_data: JSON.stringify({
               action: "stop_bot",
-              botUserName: botData.user_name,
+              botName: botData.user_name,
             }),
           },
           {
             text: "🔑 更新 Token",
             callback_data: JSON.stringify({
               action: "update_bot",
-              data: "",
             }),
           },
         ],
@@ -78,7 +89,7 @@ function botState(botData, chatId) {
             text: "💁‍♀️ 设置客服",
             callback_data: JSON.stringify({
               action: "set_servicer",
-              botUserName: botData.user_name,
+              botName: botData.user_name,
             }),
           },
         ],
@@ -102,7 +113,6 @@ function botState(botData, chatId) {
             text: "💹 代理分销",
             callback_data: JSON.stringify({
               action: "anylisis_service",
-              data: "",
             }),
           },
         ],
@@ -111,7 +121,6 @@ function botState(botData, chatId) {
             text: "🚮 删除列表",
             callback_data: JSON.stringify({
               action: "delete_bot",
-              data: "",
             }),
           },
         ],
@@ -130,16 +139,20 @@ function botState(botData, chatId) {
 
 function stopBotMessage(displayData, chatId, messageId) {
   Bot.findOneAndUpdate(
-    { botUserName: displayData.botUserName },
+    { botName: displayData.botName },
     { $set: { onoffState: false } }
   ).then(async (res) => {
-    const user = await getUserInfo(res.serviceUser);
-    const potential =
-      res.serviceUser !== null
-        ? `${user.firstName} (${res.serviceUser})`
-        : "未设置";
+    let potential;
+    
+    if (isEmpty(res.serviceUser)) {
+        potential = "未设置"
+    } else {
+        const user = await getUserInfo(res.serviceUser);
+        potential = `${user.firstName} (${res.serviceUser})`;
+    }
+
     const textParas = {
-      botNameId: displayData.botUserName,
+      botNameId: displayData.botName,
       potential,
       switch: "关闭",
       state: "未启动",
@@ -155,7 +168,7 @@ function stopBotMessage(displayData, chatId, messageId) {
               text: "▶ 启动",
               callback_data: JSON.stringify({
                 action: "run_bot",
-                botUserName: displayData.botUserName,
+                botName: displayData.botName,
               }),
             },
             {
@@ -171,14 +184,14 @@ function stopBotMessage(displayData, chatId, messageId) {
               text: "💁‍♀️ 设置客服",
               callback_data: JSON.stringify({
                 action: "set_servicer",
-                botUserName: displayData.botUserName,
+                botName: displayData.botName,
               }),
             },
           ],
           [
             {
               text: "🎉 欢迎消息",
-              url: `http://t.me/${displayData.botUserName}`,
+              url: `http://t.me/${displayData.botName}`,
             },
           ],
           [
@@ -186,7 +199,7 @@ function stopBotMessage(displayData, chatId, messageId) {
               text: "📦 商品列表",
               callback_data: JSON.stringify({
                 action: "products_list",
-                botName: displayData.botUserName,
+                botName: displayData.botName,
               }),
             },
           ],
@@ -224,19 +237,21 @@ function stopBotMessage(displayData, chatId, messageId) {
 
 function runBotMessage(displayData, chatId, messageId) {
   Bot.findOneAndUpdate(
-    { botUserName: displayData.botUserName },
+    { botName: displayData.botName },
     { $set: { onoffState: true } }
   ).then(async (res) => {
-    let user;
-    if (res.serviceUser !== "") {
-      user = await getUserInfo(res.serviceUser);
+
+    let potential;
+    
+    if (isEmpty(res.serviceUser)) {
+        potential = "未设置"
+    } else {
+        const user = await getUserInfo(res.serviceUser);
+        potential = `${user.firstName} (${res.serviceUser})`;
     }
-    const potential =
-      res.serviceUser !== ""
-        ? `${user.firstName} (${res.serviceUser})`
-        : "未设置";
+
     const textParas = {
-      botNameId: displayData.botUserName,
+      botNameId: displayData.botName,
       potential,
       switch: "开启",
       state: "已启动",
@@ -252,7 +267,7 @@ function runBotMessage(displayData, chatId, messageId) {
               text: "⛔ 停止",
               callback_data: JSON.stringify({
                 action: "stop_bot",
-                botUserName: displayData.botUserName,
+                botName: displayData.botName,
               }),
             },
             {
@@ -268,14 +283,14 @@ function runBotMessage(displayData, chatId, messageId) {
               text: "💁‍♀️ 设置客服",
               callback_data: JSON.stringify({
                 action: "set_servicer",
-                botUserName: displayData.botUserName,
+                botName: displayData.botName,
               }),
             },
           ],
           [
             {
               text: "🎉 欢迎消息",
-              url: `http://t.me/${displayData.botUserName}`,
+              url: `http://t.me/${displayData.botName}`,
             },
           ],
           [
@@ -283,7 +298,7 @@ function runBotMessage(displayData, chatId, messageId) {
               text: "📦 商品列表",
               callback_data: JSON.stringify({
                 action: "products_list",
-                botName: displayData.botUserName,
+                botName: displayData.botName,
               }),
             },
           ],
@@ -347,6 +362,8 @@ async function getBotInfo(token) {
 }
 
 function setService(chatId, data) {
+    console.log(data)
+
   const settingServiceMessage = getSettingServiceMessage();
   bot
     .sendMessage(chatId, settingServiceMessage, {
@@ -363,8 +380,8 @@ function setService(chatId, data) {
               {
                 text: "💁‍♀️ 设置此账号为客服",
                 callback_data: JSON.stringify({
-                  action: "set_me_as_service",
-                  sendBot: data.botUserName,
+                  action: "set_service",
+                  botName: data.botName,
                 }),
               },
             ],
@@ -378,29 +395,29 @@ function setService(chatId, data) {
 async function setMeAsService(data, chatId) {
   console.log("data ==========>", data);
   let myId;
-  await Bot.findOne({ botUserName: data.sendBot }).then(
+  await Bot.findOne({ botName: data.botName }).then(
     (res) => (myId = res.userId)
   );
   const me = await getUserInfo(myId);
   Bot.findOneAndUpdate(
-    { botUserName: data.sendBot },
+    { botName: data.botName },
     { $set: { serviceUser: me.userId } }
   ).then((res) => {
     console.log("res =============> ", res);
-    const childBot = setChildBot(res.token);
+    // const childBot = setChildBot(res.token);
     bot
       .sendMessage(chatId, `✅ 设置机器人客服成功，客服用户ID: ${me.userId}`)
       .then((rrr) => {
-        childBot
-          .sendMessage(
-            chatId,
-            `您已经被设置为机器人 @${res.botUserName} 的客服，您可以接收该机器人的对话。`
-          )
-          .then((child) => childBot.stopPolling());
+        // childBot
+        //   .sendMessage(
+        //     chatId,
+        //     `您已经被设置为机器人 @${res.botName} 的客服，您可以接收该机器人的对话。`
+        //   )
+        //   .then((child) => childBot.stopPolling());
         bot.sendMessage(chatId, "✅ 向客服发送通知成功").then((resthen) => {
           const bindBotMessage = res.onoffState
-            ? setBindBotMessageTurnOn(res.botUserName, me)
-            : setBindBotMessageTurnOff(res.botUserName, me);
+            ? setBindBotMessageTurnOn(res.botName, me)
+            : setBindBotMessageTurnOff(res.botName, me);
           bot.sendMessage(chatId, bindBotMessage, {
             reply_markup: {
               inline_keyboard: [
@@ -409,14 +426,13 @@ async function setMeAsService(data, chatId) {
                     text: "⛔ 停止",
                     callback_data: JSON.stringify({
                       action: "stop_bot",
-                      botUserName: res.botUserName,
+                      botName: res.botName,
                     }),
                   },
                   {
                     text: "🔑 更新 Token",
                     callback_data: JSON.stringify({
                       action: "update_bot",
-                      data: "",
                     }),
                   },
                 ],
@@ -425,14 +441,14 @@ async function setMeAsService(data, chatId) {
                     text: "💁‍♀️ 设置客服",
                     callback_data: JSON.stringify({
                       action: "set_servicer",
-                      botUserName: res.botUserName,
+                      botName: res.botName,
                     }),
                   },
                 ],
                 [
                   {
                     text: "🎉 欢迎消息",
-                    url: `http://t.me/${res.botUserName}`,
+                    url: `http://t.me/${res.botName}`,
                   },
                 ],
                 [
@@ -440,7 +456,7 @@ async function setMeAsService(data, chatId) {
                     text: "📦 商品列表",
                     callback_data: JSON.stringify({
                       action: "products_list",
-                      botName: res.botUserName,
+                      botName: res.botName,
                     }),
                   },
                 ],
@@ -449,7 +465,6 @@ async function setMeAsService(data, chatId) {
                     text: "💹 代理分销",
                     callback_data: JSON.stringify({
                       action: "anylisis_service",
-                      data: "",
                     }),
                   },
                 ],
@@ -458,7 +473,6 @@ async function setMeAsService(data, chatId) {
                     text: "🚮 删除列表",
                     callback_data: JSON.stringify({
                       action: "delete_bot",
-                      data: "",
                     }),
                   },
                 ],
@@ -484,9 +498,9 @@ async function getBotList(userId) {
   return botlist;
 }
 
-async function checkBotService(botUserName) {
+async function checkBotService(botName) {
   let isBotHasService;
-  await Bot.findOne({ botUserName }).then((res) => {
+  await Bot.findOne({ botName }).then((res) => {
     if (res !== null) {
       isBotHasService = true;
     } else {
@@ -521,13 +535,13 @@ async function goback(chatId, messageId) {
   await bot.deleteMessage(chatId, messageId);
 }
 
-function getBotWebhookState(botapitoken) {
+async function getBotWebhookState(botToken) {
   const url = new URL(
-    `https://api.telegram.org/bot${botapitoken}/getWebhookInfo`
+    `https://api.telegram.org/bot${botToken}/getWebhookInfo`
   );
 
   return new Promise((resolve, reject) => {
-    https
+    const req = https
       .get(url, (res) => {
         let data = "";
         res.on("data", (chunk) => {
@@ -536,6 +550,7 @@ function getBotWebhookState(botapitoken) {
         res.on("end", () => {
           const result = JSON.parse(data).result;
           console.log("Webhook set response:", result.url);
+          resolve(result.url)
           if (result.url !== "") {
             state = true;
           }
@@ -545,17 +560,18 @@ function getBotWebhookState(botapitoken) {
   });
 }
 
-async function setWebhook(botapitoken) {
-  const url = new URL(`https://api.telegram.org/bot${botapitoken}/setWebhook`);
-  url.searchParams.append("url", serverUrl);
+async function setWebhook(botToken) {
+  const url = new URL(`https://api.telegram.org/bot${botToken}/setWebhook`);
+  console.log(process.env.SERVER_URL)
+  // url.searchParams.append("url", process.env.SERVER_URL);
 
-  https
-    .get(url, (resp) => {
-      console.log(resp);
-    })
-    .on("error", (err) => {
-      console.error("Error setting webhook:", err.message);
-    });
+  // https
+  //   .get(url, (resp) => {
+  //     console.log(resp);
+  //   })
+  //   .on("error", (err) => {
+  //     console.error("Error setting webhook:", err.message);
+  //   });
 }
 
 module.exports = {

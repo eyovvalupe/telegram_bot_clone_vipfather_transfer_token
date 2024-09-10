@@ -22,11 +22,14 @@ let userMessages = {};
 // Set up a route to handle incoming updates
 app.post("/webhook", async (req, res) => {
   const update = req.body;
-  getBotWebhookState(botToken)
+  let webhook;
+  await getBotWebhookState(botToken)
     .then(result => {
-      console.log(result)
+      webhook = result
     })
-    .catch(err => console.error(err))
+    .catch(err => console.error(err));
+
+  console.log("http result ===========> ", webhook)
 
   // Check if the message is from a user
   if (update.message) {

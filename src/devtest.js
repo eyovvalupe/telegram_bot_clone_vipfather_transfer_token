@@ -80,7 +80,7 @@ bot.on('callback_query', async (callbackQuery) => {
             setService(chatId, data);
             break
         
-        case 'set_me_as_service':
+        case 'set_service':
             setMeAsService(data, chatId, messageId)
             break
 
@@ -97,8 +97,6 @@ bot.on('callback_query', async (callbackQuery) => {
             break
 
         case 'product_detail':
-            // console.log(data)
-            // getPdtInfo(data.pdtId)
             productDetailById(data.pdtId, chatId)
             break
 

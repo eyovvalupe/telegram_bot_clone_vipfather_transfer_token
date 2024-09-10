@@ -19,7 +19,7 @@ const BotModelSchema = new Schema({
         type: String,
         required: true,
     },
-    botUserName: {
+    botName: {
         type: String,
         required: true,
     },
