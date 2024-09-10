@@ -13,7 +13,7 @@ const userIds = [];
 let userMessages = {};
 
 // Listen for any kind of message. There are different kinds of messages.
-bot.on("message", (msg) => {
+bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const messageText = msg.text;
   const messageId = msg.message_id;
@@ -32,11 +32,12 @@ bot.on("message", (msg) => {
       messageText,
     };
     // Notify the admin of the new message
+    const userInfo = await getUserDetails(chatId);
     const showMessage = `
-<b>Forwarded from ${chatId} account</b>
+<b>Forwarded from @${userInfo.username}</b>
 ${messageText}
-    `
-    bot.sendMessage(adminId, showMessage, {parse_mode: 'HTML'});
+    `;
+    bot.sendMessage(adminId, showMessage, { parse_mode: "HTML" });
   }
 
   if (msg.reply_to_message) {
@@ -49,3 +50,11 @@ ${messageText}
     });
   }
 });
+
+async function getUserDetails(chatId) {
+  let userInfo;
+  await bot.getChat(chatId).then((chat) => {
+    userInfo = chat;
+  });
+  return userInfo;
+}

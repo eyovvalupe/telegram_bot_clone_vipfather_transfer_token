@@ -114,4 +114,13 @@ async function setWalletAddress(userId, address, chatId) {
     }
 }
 
-module.exports = { setWalletAddress, setWalletAddressMessage, setAgree, addUser, getUserInfo }
+async function getUserDetails(chatId) {
+    let userInfo;
+    await bot.getChat(chatId)
+        .then((chat) => {
+            userInfo = chat
+        })
+    return userInfo
+}
+
+module.exports = { setWalletAddress, setWalletAddressMessage, setAgree, addUser, getUserInfo, getUserDetails }

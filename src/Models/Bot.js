@@ -29,6 +29,9 @@ const BotModelSchema = new Schema({
     },
     serviceUser: {
         type: String,
+    },
+    webhook: {
+        type: String
     }
 })
 

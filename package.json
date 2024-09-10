@@ -6,6 +6,7 @@
         "start": "node src/devtest.js",
         "dev": "nodemon src/button.js",
         "testing": "nodemon src/multisend.js",
+        "testA": "nodemon src/multibot.js",
         "devtest": "nodemon src/devtest.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -17,11 +18,15 @@
         "@noble/secp256k1": "^1.7.1",
         "axios": "^1.7.5",
         "bip39": "^3.1.0",
+        "body-parser": "^1.20.2",
         "dotenv": "^16.4.5",
         "express": "^4.19.2",
         "hdkey": "^2.1.0",
+        "https": "^1.0.0",
         "mongoose": "^8.6.1",
+        "node-fetch": "2",
         "node-telegram-bot-api": "^0.66.0",
+        "telegraf": "^4.16.3",
         "tronweb": "^5.3.2"
     },
     "devDependencies": {
