@@ -2,11 +2,16 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const fetch = require("node-fetch");
 const { getUserDetails } = require("./actions/user");
+const { sendMessage } = require("./actions/bot");
+const bot = require('./bot')
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-
+bot.onText('yaaa', (msg) => {
+  const chatId = msg.chat.id
+  bot.sendMessage(chatId,'I am here')
+})
 // Middleware
 app.use(bodyParser.json());
 
@@ -19,6 +24,7 @@ app.post("/webhook/:botToken", async (req, res) => {
   const update = req.body;
 
   console.log(req.params.botToken)
+  const TELEGRAM_API_URL = `https://api.telegram.org/bot${req.params.botToken}`;
 
   // Check if the message is from a user
   if (update.message) {
@@ -67,14 +73,14 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-async function sendMessage(chatId, sendText, data, TELEGRAM_API_URL) {
-  await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
-    method: "POST",
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: sendText,
-      ...data,
-    }),
-    headers: { "Content-Type": "application/json" },
-  });
-}
+// async function sendMessage(chatId, sendText, data, TELEGRAM_API_URL) {
+//   await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+//     method: "POST",
+//     body: JSON.stringify({
+//       chat_id: chatId,
+//       text: sendText,
+//       ...data,
+//     }),
+//     headers: { "Content-Type": "application/json" },
+//   });
+// }

@@ -572,6 +572,18 @@ async function setWebhook(botToken) {
   });
 }
 
+async function sendMessage(chatId, sendText, data, TELEGRAM_API_URL) {
+  await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+    method: "POST",
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: sendText,
+      ...data,
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 module.exports = {
   setWebhook,
   getBotWebhookState,
@@ -585,4 +597,5 @@ module.exports = {
   stopBotMessage,
   addRobot,
   getBotInfo,
+  sendMessage
 };
