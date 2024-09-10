@@ -1,11 +1,15 @@
 const https = require('https');
+const { isEmpty } = require('./utils');
 require("dotenv").config();
 
 function setWebhook(botToken, url) {
   return new Promise((resolve, reject) => {
     const webhookUrl = `https://api.telegram.org/bot${botToken}/setWebhook`;
-    
-    const data = JSON.stringify({ url });
+    let finalUrl;
+    if (isEmpty(url)) {
+      finalUrl = '';
+    } else finalUrl = `${url}/${botToken}`
+    const data = JSON.stringify({ url: finalUrl });
 
     const req = https.request(webhookUrl, {
       method: 'POST',
@@ -54,23 +58,15 @@ function getWebhookInfo(botToken) {
   });
 }
 
-module.exports = async (botToken, newWebhookUrl) => {
+module.exports = async (botToken, newWebhookUrl, botData) => {
   try {
-    // Step 1: Get current webhook info
     const currentInfo = await getWebhookInfo(botToken);
-    console.log('Current webhook info:', currentInfo);
 
-    // Step 2: Delete the existing webhook
     await setWebhook(botToken, ''); // Set to empty to delete the webhook
-    console.log('Existing webhook deleted.');
 
-    // Step 3: Set the new webhook
     const result = await setWebhook(botToken, newWebhookUrl);
-    console.log('New webhook set:', result);
 
-    // Step 4: Verify the new webhook info
     const newInfo = await getWebhookInfo(botToken);
-    console.log('Updated webhook info:', newInfo);
     return new Promise((resolve, reject) => {
       resolve(newInfo);
     })
@@ -78,8 +74,3 @@ module.exports = async (botToken, newWebhookUrl) => {
     console.error('Error resetting webhook:', error.message);
   }
 }
-
-// const botToken = '7307700056:AAFS_khk783917vQl5B2YPSgUBjQRnnOWW8';
-// const newWebhookUrl = process.env.SERVER_URL;
-
-// resetWebhook(botToken, newWebhookUrl);

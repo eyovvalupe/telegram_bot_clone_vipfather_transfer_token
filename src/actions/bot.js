@@ -18,7 +18,8 @@ async function addRobot(botToken, chatId, user) {
   Bot.findOne({ token: botToken }).then(async (res) => {
     if (res === null) {
       const botData = await getBotInfo(botToken);
-      resetwebhook(botToken, process.env.SERVER_URL)
+      console.log("bot page botdata ===========>", botData)
+      resetwebhook(botToken, process.env.SERVER_URL, botData)
         .then(res => console.log(res))
       const newBot = new Bot({
         token: botToken,
@@ -353,8 +354,6 @@ async function getBotInfo(token) {
 }
 
 function setService(chatId, data) {
-  console.log(data);
-
   const settingServiceMessage = getSettingServiceMessage();
   bot
     .sendMessage(chatId, settingServiceMessage, {
@@ -384,7 +383,6 @@ function setService(chatId, data) {
 }
 
 async function setMeAsService(data, chatId) {
-  console.log("data ==========>", data);
   let myId;
   await Bot.findOne({ botName: data.botName }).then(
     (res) => (myId = res.userId)
@@ -394,8 +392,6 @@ async function setMeAsService(data, chatId) {
     { botName: data.botName },
     { $set: { serviceUser: me.userId } }
   ).then((res) => {
-    console.log("res =============> ", res);
-    // const childBot = setChildBot(res.token);
     bot
       .sendMessage(chatId, `✅ 设置机器人客服成功，客服用户ID: ${me.userId}`)
       .then((rrr) => {
@@ -538,7 +534,6 @@ async function getBotWebhookState(botToken) {
         });
         res.on("end", () => {
           const result = JSON.parse(data).result;
-          console.log("Webhook set response:", result.url);
           resolve(result.url);
           if (result.url !== "") {
             state = true;
