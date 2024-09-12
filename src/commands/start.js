@@ -17,7 +17,8 @@ module.exports = (bot, chatId, msg) => {
                     inline_keyboard: [
                         [{
                             text: '💡 商家入驻',
-                            url: `https://t.me/viphelper`
+                            // url: `https://t.me/viphelper`
+                            url: 'https://t.me/+Fip6fnC6kscwNDQ0'
                         }],
                     ],
             },
