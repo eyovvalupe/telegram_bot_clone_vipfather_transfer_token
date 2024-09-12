@@ -39,7 +39,10 @@ const orderBook = require("./commands/orderBook");
 const transactionHistory = require("./commands/transactionHistory");
 const analysis = require("./commands/analysis");
 const sendTransaction = require("./commands/sendTransaction");
-const registerGenerateCommand = require("./commands/generate")
+const registerGenerateCommand = require("./commands/generate");
+const registerBalanceCommand = require("./commands/balance");
+const registerInfoCommand = require("./commands/info");
+const registerTransferCommand = require("./commands/transfer");
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -53,11 +56,10 @@ const port = process.env.PORT || 3000;
 const adminId = {};
 const userIds = [];
 let userMessages = {};
-let pendingTransfers = {}
-let isGenerateRegistered = false
-let isBalanceRegistered = false
-let isTransferRegistered = false
-let isStartRegistered = false
+let isGenerateRegistered = false;
+let isBalanceRegistered = false;
+let isTransferRegistered = false;
+let isInfoRegistered = false;
 
 database();
 
@@ -327,10 +329,32 @@ bot.onText(/\💰 分销结算/, (msg) => {
 
 bot.onText(/\/generate/, (msg) => {
   if (!isGenerateRegistered) {
-    registerGenerateCommand(bot)
-    isGenerateRegistered = true // Mark as registered
-}
-})
+    registerGenerateCommand(bot, msg);
+    isGenerateRegistered = true;
+  }
+});
+
+bot.onText(/\/balance/, (msg) => {
+  if (!isBalanceRegistered) {
+    registerBalanceCommand(bot, msg);
+    isBalanceRegistered = true;
+  }
+});
+
+bot.onText(/\/info/, (msg) => {
+  const chatId = msg.chat.id;
+  if (!isInfoRegistered) {
+    registerInfoCommand(bot, chatId);
+    isInfoRegistered = true;
+  }
+});
+
+bot.onText(/\/transfer/, (msg) => {
+  if (!isTransferRegistered) {
+    registerTransferCommand(bot, msg);
+    isTransferRegistered = true; // Mark as registered
+  }
+});
 
 // Cancel command
 bot.onText(/\/cancel/, (msg) => {
