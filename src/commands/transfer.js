@@ -17,8 +17,13 @@ module.exports = (bot, pendingTransfers) => {
         }
 
         const fromAddress = args[1]
+        console.log('fromAddress: ', fromAddress)
+
         const toAddress = args[2]
+        console.log('toAddress: ', toAddress)
+
         const amount = parseFloat(args[3])
+        console.log('amount: ', amount)
 
         if (amount <= 0) {
             bot.sendMessage(chatId, "The transfer amount must be greater than 0.")
@@ -38,6 +43,7 @@ module.exports = (bot, pendingTransfers) => {
 
         try {
             const { gasFee, transactionHash } = await estimateTransactionFee(tronWeb, fromAddress, toAddress, tronWeb.toSun(amount))
+
             const gasFeeInTRX = parseFloat(tronWeb.fromSun(gasFee))
             const balanceInSun = await tronWeb.trx.getBalance(fromAddress)
             const balanceInTRX = parseFloat(tronWeb.fromSun(balanceInSun))

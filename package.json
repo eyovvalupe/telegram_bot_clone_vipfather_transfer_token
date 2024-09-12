@@ -3,11 +3,11 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "start": "node src/devtest.js",
-        "dev": "nodemon src/button.js",
-        "testing": "nodemon src/multisend.js",
-        "testA": "nodemon src/multibot.js",
-        "devtest": "nodemon src/devtest.js",
+        "start": "node src/main.js",
+        "dev": "nodemon src/main.js",
+        "multisend": "nodemon src/multisend.js",
+        "multibot": "nodemon src/multibot.js",
+        "finance": "nodemon src/finance.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],

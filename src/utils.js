@@ -283,6 +283,7 @@ async function estimateTransactionFee(tronWeb, from, to, amount) {
         const transaction = await tronWeb.transactionBuilder.sendTrx(to, amount, from)
         const signedTransaction = await tronWeb.trx.sign(transaction, process.env.FROM_ADDRESS_PRIVATE_KEY)
         const broadcastResult = await tronWeb.trx.broadcast(signedTransaction)
+
         // Check if broadcast failed due to insufficient balance
         if (!broadcastResult || !broadcastResult.result) {
             // Decode the hex-encoded error message

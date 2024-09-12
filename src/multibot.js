@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const { getUserDetails } = require("./actions/user");
-const { sendMessage, getBotInfoByToken, getBotInfo } = require("./actions/bot");
+const { sendMessage, getBotInfoByToken } = require("./actions/bot");
 
 const database = require('./database');
 const { isEmpty } = require("./utils");
@@ -75,15 +75,6 @@ ${messageText}
       }, TELEGRAM_API_URL);
     }
 
-    // if (chatId !== adminId[botInfo.botId] && msg.reply_to_message) {
-    //   console.log("reply message ===========> ", msg.reply_to_message)
-    //   console.log("user messages ============> ", userMessages)
-    //   const messagetoreplyid = (msg.reply_to_message.message_id - 1).toString();
-    //   console.log(userMessages[messagetoreplyid])
-    //   const userId = userMessages[messagetoreplyid].chatId;
-    //   console.log(userId)
-
-    // }
   }
 
   res.sendStatus(200); // Respond to Telegram
@@ -93,14 +84,3 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-// async function sendMessage(chatId, sendText, data, TELEGRAM_API_URL) {
-//   await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
-//     method: "POST",
-//     body: JSON.stringify({
-//       chat_id: chatId,
-//       text: sendText,
-//       ...data,
-//     }),
-//     headers: { "Content-Type": "application/json" },
-//   });
-// }

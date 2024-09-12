@@ -2,7 +2,7 @@ const axios = require("axios")
 
 const fetchTrxPrice = async () => {
     try {
-        const response = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd,eur,btc")
+        const response = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd,eur,btc,cny")
         return response.data.tron
     } catch (error) {
         console.error("Error fetching TRX prices:", error)
@@ -18,6 +18,7 @@ module.exports = bot => {
             const prices = await fetchTrxPrice()
             const message = `
 TRX Prices:
+- CNY: ￥${prices.cny}
 - USD: $${prices.usd}
 - EUR: €${prices.eur}
 - BTC: ${prices.btc} BTC
